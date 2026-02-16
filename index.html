@@ -55,7 +55,7 @@
             }
         }
         
-        /* Splash with fade transition */
+        /* Splash with slow fade transition */
         #splash{
             position:absolute;
             top:0;
@@ -68,7 +68,7 @@
             justify-content:center;
             align-items:center;
             z-index:9999;
-            transition:opacity 0.8s ease-in-out, visibility 0.8s;
+            transition:opacity 2s ease-in-out, visibility 2s;
         }
         #splash.hidden{
             opacity:0;
@@ -76,7 +76,7 @@
             pointer-events:none;
         }
         #splash.fade-out{
-            animation:fadeOut 0.8s forwards;
+            animation:fadeOut 2s forwards;
         }
         @keyframes fadeOut{
             0%{opacity:1}
@@ -125,7 +125,7 @@
             opacity:1;
         }
         #login-screen.fade-in{
-            animation:fadeIn 0.5s forwards;
+            animation:fadeIn 0.8s forwards;
         }
         @keyframes fadeIn{
             from{opacity:0}
@@ -372,7 +372,6 @@
             color:var(--grey);
         }
         
-        /* Thumbnail styling */
         .activity-thumbnail{
             width:100%;
             max-width:200px;
@@ -407,7 +406,6 @@
         }
         .activity-thumbnail:hover::after{opacity:1}
         
-        /* Full screen image modal */
         .image-modal{
             display:none;
             position:fixed;
@@ -820,7 +818,6 @@
         .empty-state{text-align:center;padding:60px 20px;color:var(--grey)}
         .empty-state-icon{font-size:64px;margin-bottom:20px}
         
-        /* Pull to refresh indicator */
         .pull-indicator{
             text-align:center;
             padding:20px;
@@ -830,7 +827,6 @@
         }
         .pull-indicator.visible{display:block}
         
-        /* Loading spinner */
         .spinner{
             display:inline-block;
             width:20px;
@@ -1105,7 +1101,6 @@
         let currentModalType='feed';
         let touchStartY=0;
         
-        // Check for saved credentials on load
         document.addEventListener('DOMContentLoaded',function(){
             const savedUser=localStorage.getItem('kin_saved_username');
             const savedPass=localStorage.getItem('kin_saved_password');
@@ -1117,7 +1112,6 @@
                 document.getElementById('remember-me').checked=true;
             }
             
-            // Check if already logged in
             if(currentUser){
                 setTimeout(()=>{
                     document.getElementById('splash').classList.add('fade-out');
@@ -1127,8 +1121,8 @@
                         document.getElementById('user-badge').textContent=Object.keys(users).find(k=>users[k]===currentUser);
                         generateCalendar();
                         renderAll();
-                    },800);
-                },1500);
+                    },2000);
+                },3000);
             }else{
                 setTimeout(()=>{
                     document.getElementById('splash').classList.add('fade-out');
@@ -1136,8 +1130,8 @@
                         document.getElementById('splash').classList.add('hidden');
                         document.getElementById('login-screen').classList.add('active');
                         document.getElementById('login-screen').classList.add('fade-in');
-                    },800);
-                },2000);
+                    },2000);
+                },3000);
             }
             
             setupPullToRefresh();
@@ -1154,7 +1148,6 @@
             if(userKey){
                 currentUser=users[userKey];
                 
-                // Save credentials if remember me checked
                 if(remember){
                     localStorage.setItem('kin_saved_username',u);
                     localStorage.setItem('kin_saved_password',p);
@@ -1185,7 +1178,6 @@
             document.getElementById('username').value='';
             document.getElementById('password').value='';
             
-            // Keep saved credentials if remember me was checked
             const rememberMe=localStorage.getItem('kin_remember_me')==='true';
             if(rememberMe){
                 const savedUser=localStorage.getItem('kin_saved_username');
@@ -1229,7 +1221,6 @@
             }
         }
         
-        // Photo handling
         function openPhotoModal(){
             closeFabMenu();
             document.getElementById('photo-modal').classList.add('active');
@@ -1268,7 +1259,6 @@
             btn.disabled=true;
             btn.innerHTML='<span class="spinner"></span> Sharing...';
             
-            // Simulate upload delay for better UX
             setTimeout(()=>{
                 const newItem={
                     timestamp:Date.now(),
@@ -1286,7 +1276,6 @@
                 renderAll();
                 closePhotoModal();
                 
-                // Reset
                 currentPhotoData=null;
                 document.getElementById('photo-caption').value='';
                 document.getElementById('photo-preview').innerHTML='<div class="photo-preview-placeholder">📷</div>';
@@ -1295,7 +1284,6 @@
             },500);
         }
         
-        // Image expansion
         function expandImage(src){
             document.getElementById('expanded-image').src=src;
             document.getElementById('image-modal').classList.add('active');
@@ -1305,7 +1293,6 @@
             document.getElementById('image-modal').classList.remove('active');
         }
         
-        // Activity logging
         function addActivity(user,action,itemText,image=null){
             const activity={
                 timestamp:Date.now(),
@@ -1702,7 +1689,6 @@
             alert(`🔔 You have ${count} pending items`);
         }
         
-        // Pull to refresh handling
         function setupPullToRefresh(){
             const app=document.getElementById('app');
             const indicator=document.getElementById('pull-indicator');
@@ -1743,7 +1729,6 @@
             });
         }
         
-        // Close modals on outside click
         document.getElementById('add-modal').addEventListener('click',function(e){
             if(e.target===this) closeModal();
         });
@@ -1775,7 +1760,6 @@
             navigator.serviceWorker.register('service-worker.js');
         }
         
-        // Prevent zoom on double tap
         let lastTouchEnd=0;
         document.addEventListener('touchend',function(e){
             const now=Date.now();
