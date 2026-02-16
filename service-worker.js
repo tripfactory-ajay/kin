@@ -1,0 +1,1 @@
+const CACHE_NAME='kin-v1',urlsToCache=['/kin/','/kin/index.html','/kin/kin.png'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)))});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});
