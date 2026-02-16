@@ -147,6 +147,7 @@
                 <div class="header-user">
                     <span class="user-badge" id="user-badge"></span>
                     <div class="header-actions">
+                        <button class="icon-btn" onclick="installApp()" id="install-btn" style="display:none" title="Install App">📲</button>
                         <button class="icon-btn" onclick="showNotifications()">🔔</button>
                         <button class="icon-btn" onclick="logout()">→</button>
                     </div>
@@ -302,6 +303,7 @@
         let currentUser=null;
         let data={feed:JSON.parse(localStorage.getItem('kin_feed')||'[]'),notes:JSON.parse(localStorage.getItem('kin_notes')||'[]'),reminders:JSON.parse(localStorage.getItem('kin_reminders')||'[]'),wishlist:JSON.parse(localStorage.getItem('kin_wishlist')||'[]'),events:JSON.parse(localStorage.getItem('kin_events')||'[]'),tasks:JSON.parse(localStorage.getItem('kin_tasks')||'[]')};
         const users={'Ajay':'ajay','Lamies':'lamies','Amelle':'amelle','Elissa':'elissa'};
+        let deferredPrompt;
         
         document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){document.getElementById('splash').classList.add('hidden');document.getElementById('login-screen').classList.add('active')},2000);generateCalendar();renderAll()});
         
@@ -336,6 +338,9 @@
         function filterActions(p,b){document.querySelectorAll('#actions-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#actions-container .todo-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'flex':'none'})}
         function showNotifications(){alert('🔔 You have '+(data.reminders.length+data.tasks.filter(t=>!t.completed).length)+' pending items')}
         document.getElementById('add-modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+        
+        window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-btn').style.display='flex'});
+        function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then((choiceResult)=>{if(choiceResult.outcome==='accepted'){document.getElementById('install-btn').style.display='none'}deferredPrompt=null})}else{alert('To install: Tap Share button → Add to Home Screen')}}
         if('serviceWorker'in navigator){navigator.serviceWorker.register('service-worker.js')}
     </script>
 </body>
