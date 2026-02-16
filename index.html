@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="KiN">
     <title>KiN - The Kawa Family</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="kin.png">
@@ -13,15 +15,56 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
         :root{--black:#000;--white:#fff;--red:#ff3333;--grey-light:#f5f5f5;--grey:#999;--grey-dark:#333}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--white);color:var(--black);line-height:1.6;overflow-x:hidden}
-        #splash{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;transition:opacity .5s}
+        
+        html,body{
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:var(--white);
+            color:var(--black);
+            line-height:1.6;
+            overflow-x:hidden;
+            height:100%;
+            width:100%;
+            position:fixed;
+            touch-action:manipulation;
+        }
+        
+        /* Phone-like container */
+        #app-container{
+            width:100%;
+            height:100%;
+            max-width:480px;
+            margin:0 auto;
+            position:relative;
+            background:var(--white);
+            overflow:hidden;
+            box-shadow:0 0 50px rgba(0,0,0,0.1);
+        }
+        
+        @media (min-width:481px){
+            body{
+                background:linear-gradient(135deg,#667eea,#764ba2);
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:20px;
+            }
+            #app-container{
+                height:90vh;
+                border-radius:40px;
+                overflow:hidden;
+                border:8px solid #1a1a1a;
+            }
+        }
+        
+        #splash{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;transition:opacity .5s}
         #splash.hidden{opacity:0;pointer-events:none}
-        .splash-logo-img{width:400px;height:400px;margin-bottom:30px}
+        .splash-logo-img{width:200px;height:200px;margin-bottom:30px}
         .splash-subtitle{color:var(--grey);font-size:16px;letter-spacing:2px}
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--white);display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px;z-index:9998}
+        
+        #login-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--white);display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px;z-index:9998}
         #login-screen.active{display:flex}
         .login-box{width:100%;max-width:350px;text-align:center}
-        .login-logo-img{width:300px;height:300px;margin-bottom:30px}
+        .login-logo-img{width:150px;height:150px;margin-bottom:30px}
         .login-title{font-size:24px;font-weight:700;margin-bottom:5px}
         .login-subtitle{color:var(--grey);font-size:14px;margin-bottom:40px}
         .input-group{margin-bottom:20px;text-align:left}
@@ -30,37 +73,50 @@
         .input-group input:focus{outline:none;border-color:var(--black)}
         .btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}
         .btn-primary{background:var(--black);color:var(--white)}
-        #app{display:none;min-height:100vh;padding-bottom:90px}
+        
+        #app{display:none;height:100%;padding-bottom:90px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
         #app.active{display:block}
+        
         .header{background:var(--white);padding:15px 20px;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:100}
-        .header-content{display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:0 auto}
-        .header-logo-img{height:40px}
+        .header-content{display:flex;justify-content:space-between;align-items:center}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .home-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--grey-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform 0.2s}
+        .home-btn:active{transform:scale(0.95)}
+        .header-logo-img{height:32px}
         .header-user{display:flex;align-items:center;gap:10px}
         .user-badge{background:var(--black);color:var(--white);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
-        .header-actions{display:flex;gap:15px}
-        .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--grey-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
-        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid #f0f0f0;padding:10px 0;z-index:100}
-        .nav-items{display:flex;justify-content:space-around;max-width:600px;margin:0 auto}
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 10px;cursor:pointer;border:none;background:none;color:var(--grey);font-size:10px;font-weight:500}
+        .header-actions{display:flex;gap:10px}
+        .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--grey-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.2s}
+        .icon-btn:active{transform:scale(0.95)}
+        
+        .bottom-nav{position:absolute;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid #f0f0f0;padding:10px 0;z-index:100;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+        .nav-items{display:flex;justify-content:space-around}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 10px;cursor:pointer;border:none;background:none;color:var(--grey);font-size:10px;font-weight:500;transition:all 0.2s}
         .nav-item.active{color:var(--black)}
         .nav-item svg{width:22px;height:22px;stroke-width:2}
-        .section{display:none;padding:20px;max-width:600px;margin:0 auto;animation:fadeIn .3s}
+        
+        .section{display:none;padding:20px;animation:fadeIn .3s}
         .section.active{display:block}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         .section-title{font-size:28px;font-weight:700;margin-bottom:20px}
-        .family-tabs{display:flex;gap:10px;margin-bottom:20px;overflow-x:auto;padding-bottom:10px}
+        
+        .family-tabs{display:flex;gap:10px;margin-bottom:20px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch}
         .family-tabs::-webkit-scrollbar{display:none}
-        .family-tab{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:50px;border:2px solid #e0e0e0;background:var(--white);cursor:pointer;white-space:nowrap;font-weight:500}
+        .family-tab{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:50px;border:2px solid #e0e0e0;background:var(--white);cursor:pointer;white-space:nowrap;font-weight:500;transition:all 0.2s}
         .family-tab.active{border-color:var(--black);background:var(--black);color:var(--white)}
         .family-avatar{width:28px;height:28px;border-radius:50%;background:var(--grey-light);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
         .family-tab.active .family-avatar{background:var(--white);color:var(--black)}
+        
         .card{background:var(--white);border-radius:16px;padding:20px;margin-bottom:15px;border:1px solid #f0f0f0}
-        .feed-item{background:var(--white);border-radius:16px;overflow:hidden;margin-bottom:20px;border:1px solid #f0f0f0}
-        .feed-image{width:100%;height:280px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;background:linear-gradient(135deg,#667eea,#764ba2)}
+        
+        .feed-item{background:var(--white);border-radius:16px;overflow:hidden;margin-bottom:20px;border:1px solid #f0f0f0;animation:slideUp 0.4s ease-out}
+        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .feed-image{width:100%;height:240px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;background:linear-gradient(135deg,#667eea,#764ba2)}
         .feed-content{padding:20px}
         .feed-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
         .feed-author{font-weight:600}
         .feed-time{font-size:12px;color:var(--grey)}
+        
         .wishlist-item{display:flex;gap:15px;padding:15px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0}
         .wishlist-image{width:80px;height:80px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#fa709a,#fee140)}
         .wishlist-info{flex:1}
@@ -68,234 +124,257 @@
         .wishlist-price{color:var(--red);font-weight:700;font-size:18px;margin-bottom:5px}
         .wishlist-link{font-size:12px;color:var(--red);text-decoration:none;word-break:break-all}
         .bought-badge{background:var(--grey-light);color:var(--grey);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:10px}
+        
         .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
         .calendar-month{font-size:20px;font-weight:700}
         .calendar-nav{display:flex;gap:10px}
-        .calendar-nav button{width:36px;height:36px;border-radius:50%;border:1px solid #e0e0e0;background:var(--white);cursor:pointer;font-size:16px}
+        .calendar-nav button{width:36px;height:36px;border-radius:50%;border:1px solid #e0e0e0;background:var(--white);cursor:pointer;font-size:16px;transition:all 0.2s}
+        .calendar-nav button:active{background:var(--grey-light)}
         .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:30px}
         .calendar-day-header{text-align:center;font-size:12px;font-weight:600;color:var(--grey);padding:10px 0}
-        .calendar-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:14px;cursor:pointer;position:relative}
+        .calendar-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:14px;cursor:pointer;position:relative;transition:all 0.2s}
+        .calendar-day:active{background:var(--grey-light)}
         .calendar-day.active{background:var(--black);color:var(--white)}
         .calendar-day.has-event::after{content:'';position:absolute;bottom:6px;width:4px;height:4px;background:var(--red);border-radius:50%}
+        
         .event-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0;border-left:4px solid var(--black)}
         .event-item.travel{border-left-color:var(--red)}
         .event-item.school{border-left-color:#4ecdc4}
         .event-time{text-align:center;min-width:45px}
         .event-day{font-weight:700;font-size:20px}
         .event-month{font-size:11px;color:var(--grey);text-transform:uppercase}
-        .event-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer;margin-left:auto}
+        .event-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer;padding:5px}
+        
         .todo-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0}
-        .todo-checkbox{width:24px;height:24px;border:2px solid #e0e0e0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .todo-checkbox{width:24px;height:24px;border:2px solid #e0e0e0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
         .todo-checkbox.checked{background:var(--black);border-color:var(--black)}
         .todo-checkbox.checked::after{content:'✓';color:#fff;font-weight:bold;font-size:14px}
         .todo-text{flex:1}
         .todo-text.completed{text-decoration:line-through;color:var(--grey)}
-        .todo-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer}
+        .todo-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer;padding:5px}
+        .todo-assignee{font-size:12px;color:var(--grey);display:block;margin-top:4px}
+        
         .note-card{background:var(--grey-light);padding:20px;border-radius:16px;margin-bottom:15px;position:relative}
         .note-card:nth-child(even){background:var(--black);color:var(--white)}
         .note-to{font-size:11px;font-weight:600;opacity:.6;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
         .note-text{font-size:16px;line-height:1.5;font-weight:500}
         .note-from{font-size:11px;margin-top:12px;opacity:.6;text-align:right}
-        .note-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer}
+        .note-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer;padding:5px}
+        
         .reminder-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0;border-left:4px solid var(--red)}
         .reminder-icon{width:44px;height:44px;border-radius:12px;background:var(--grey-light);display:flex;align-items:center;justify-content:center;font-size:20px}
         .reminder-content{flex:1}
         .reminder-title{font-weight:600;margin-bottom:4px}
         .reminder-time{font-size:12px;color:var(--grey)}
-        .reminder-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer}
-        .fab{position:fixed;bottom:100px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--black);color:var(--white);border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:90;display:flex;align-items:center;justify-content:center}
-        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+        .reminder-delete{background:none;border:none;color:var(--grey);font-size:18px;cursor:pointer;padding:5px}
+        
+        .fab{position:absolute;bottom:100px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--black);color:var(--white);border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:90;display:flex;align-items:center;justify-content:center;transition:transform 0.2s}
+        .fab:active{transform:scale(0.95)}
+        
+        .modal{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
         .modal.active{display:flex}
-        .modal-content{background:var(--white);width:100%;max-width:500px;border-radius:24px 24px 0 0;padding:30px;animation:slideUp .3s;max-height:90vh;overflow-y:auto}
+        .modal-content{background:var(--white);width:100%;border-radius:24px 24px 0 0;padding:30px;animation:slideUp .3s;max-height:85vh;overflow-y:auto}
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
         .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
         .modal-title{font-size:24px;font-weight:700}
-        .close-btn{background:none;border:none;font-size:28px;cursor:pointer;color:var(--grey);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+        .close-btn{background:none;border:none;font-size:28px;cursor:pointer;color:var(--grey);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s}
+        .close-btn:active{background:var(--grey-light)}
+        
         .form-group{margin-bottom:20px}
         .form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--grey-dark);font-size:14px}
-        .form-group input,.form-group textarea,.form-group select{width:100%;padding:16px;border:2px solid #e0e0e0;border-radius:12px;font-size:16px;font-family:inherit}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:16px;border:2px solid #e0e0e0;border-radius:12px;font-size:16px;font-family:inherit;-webkit-appearance:none}
         .form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--black)}
         .form-group textarea{resize:vertical;min-height:100px}
         .btn-secondary{background:var(--grey-light);color:var(--black);margin-top:10px}
+        
         .empty-state{text-align:center;padding:60px 20px;color:var(--grey)}
         .empty-state-icon{font-size:64px;margin-bottom:20px}
     </style>
 </head>
 <body>
-    <div id="splash"><img src="kin.png" alt="KiN" class="splash-logo-img"><div class="splash-subtitle">THE KAWA FAMILY</div></div>
-    <div id="login-screen">
-        <div class="login-box">
-            <img src="kin.png" alt="KiN" class="login-logo-img">
-            <div class="login-title">Welcome Home</div>
-            <div class="login-subtitle">The Kawa Family Portal</div>
-            <div class="input-group">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Enter username (Kawa)">
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Enter your first name">
-            </div>
-            <button class="btn btn-primary" onclick="login()">Enter KiN</button>
+    <div id="app-container">
+        <div id="splash">
+            <img src="kin.png" alt="KiN" class="splash-logo-img">
+            <div class="splash-subtitle">THE KAWA FAMILY</div>
         </div>
-    </div>
+        
+        <div id="login-screen">
+            <div class="login-box">
+                <img src="kin.png" alt="KiN" class="login-logo-img">
+                <div class="login-title">Welcome Home</div>
+                <div class="login-subtitle">The Kawa Family Portal</div>
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter username (Kawa)">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter your first name">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Enter KiN</button>
+            </div>
+        </div>
 
-    <div id="app">
-        <div class="header">
-            <div class="header-content">
-                <img src="kin.png" alt="KiN" class="header-logo-img">
-                <div class="header-user">
-                    <span class="user-badge" id="user-badge"></span>
-                    <div class="header-actions">
-                        <button class="icon-btn" onclick="installApp()" id="install-btn" style="display:none" title="Install App">📲</button>
-                        <button class="icon-btn" onclick="showNotifications()">🔔</button>
-                        <button class="icon-btn" onclick="logout()">→</button>
+        <div id="app">
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="home-btn" onclick="goHome()" title="Back to Feed">🏠</button>
+                        <img src="kin.png" alt="KiN" class="header-logo-img">
+                    </div>
+                    <div class="header-user">
+                        <span class="user-badge" id="user-badge"></span>
+                        <div class="header-actions">
+                            <button class="icon-btn" onclick="installApp()" id="install-btn" style="display:none" title="Install App">📲</button>
+                            <button class="icon-btn" onclick="showNotifications()">🔔</button>
+                            <button class="icon-btn" onclick="logout()">→</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="section active" id="feed-section">
-            <div class="family-tabs">
-                <button class="family-tab active" onclick="filterByPerson('all',this)"><div class="family-avatar">All</div><span>Everyone</span></button>
-                <button class="family-tab" onclick="filterByPerson('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
-                <button class="family-tab" onclick="filterByPerson('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
-                <button class="family-tab" onclick="filterByPerson('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
-                <button class="family-tab" onclick="filterByPerson('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
-            </div>
-            <div id="feed-container"></div>
-        </div>
-
-        <div class="section" id="notes-section">
-            <h2 class="section-title">Family Notes</h2>
-            <div id="notes-container"></div>
-        </div>
-
-        <div class="section" id="reminders-section">
-            <h2 class="section-title">Reminders</h2>
-            <div id="reminders-container"></div>
-        </div>
-
-        <div class="section" id="wishlists-section">
-            <div class="family-tabs">
-                <button class="family-tab active" onclick="filterWishlist('all',this)"><div class="family-avatar">All</div><span>All Lists</span></button>
-                <button class="family-tab" onclick="filterWishlist('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
-                <button class="family-tab" onclick="filterWishlist('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
-                <button class="family-tab" onclick="filterWishlist('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
-                <button class="family-tab" onclick="filterWishlist('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
-            </div>
-            <div id="wishlist-container"></div>
-        </div>
-
-        <div class="section" id="calendar-section">
-            <h2 class="section-title">Family Calendar</h2>
-            <div class="calendar-header">
-                <div class="calendar-month" id="calendar-month">February 2026</div>
-                <div class="calendar-nav">
-                    <button onclick="changeMonth(-1)">←</button>
-                    <button onclick="changeMonth(1)">→</button>
+            <div class="section active" id="feed-section">
+                <div class="family-tabs">
+                    <button class="family-tab active" onclick="filterByPerson('all',this)"><div class="family-avatar">All</div><span>Everyone</span></button>
+                    <button class="family-tab" onclick="filterByPerson('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
+                    <button class="family-tab" onclick="filterByPerson('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
+                    <button class="family-tab" onclick="filterByPerson('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
+                    <button class="family-tab" onclick="filterByPerson('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
                 </div>
+                <div id="feed-container"></div>
             </div>
-            <div class="card">
-                <div class="calendar-grid" id="calendar-grid"></div>
+
+            <div class="section" id="notes-section">
+                <h2 class="section-title">Family Notes</h2>
+                <div id="notes-container"></div>
             </div>
-            <h3 style="margin:25px 0 15px;font-size:18px;font-weight:600">Upcoming Events</h3>
-            <div id="events-container"></div>
+
+            <div class="section" id="reminders-section">
+                <h2 class="section-title">Reminders</h2>
+                <div id="reminders-container"></div>
+            </div>
+
+            <div class="section" id="wishlists-section">
+                <div class="family-tabs">
+                    <button class="family-tab active" onclick="filterWishlist('all',this)"><div class="family-avatar">All</div><span>All Lists</span></button>
+                    <button class="family-tab" onclick="filterWishlist('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
+                    <button class="family-tab" onclick="filterWishlist('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
+                    <button class="family-tab" onclick="filterWishlist('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
+                    <button class="family-tab" onclick="filterWishlist('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
+                </div>
+                <div id="wishlist-container"></div>
+            </div>
+
+            <div class="section" id="calendar-section">
+                <h2 class="section-title">Family Calendar</h2>
+                <div class="calendar-header">
+                    <div class="calendar-month" id="calendar-month">February 2026</div>
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)">←</button>
+                        <button onclick="changeMonth(1)">→</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
+                <h3 style="margin:25px 0 15px;font-size:18px;font-weight:600">Upcoming Events</h3>
+                <div id="events-container"></div>
+            </div>
+
+            <div class="section" id="actions-section">
+                <h2 class="section-title">Action Lists</h2>
+                <div class="family-tabs">
+                    <button class="family-tab active" onclick="filterActions('all',this)"><div class="family-avatar">All</div><span>All Tasks</span></button>
+                    <button class="family-tab" onclick="filterActions('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
+                    <button class="family-tab" onclick="filterActions('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
+                    <button class="family-tab" onclick="filterActions('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
+                    <button class="family-tab" onclick="filterActions('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
+                </div>
+                <div id="actions-container"></div>
+            </div>
+
+            <button class="fab" onclick="openModal()">+</button>
         </div>
 
-        <div class="section" id="actions-section">
-            <h2 class="section-title">Action Lists</h2>
-            <div class="family-tabs">
-                <button class="family-tab active" onclick="filterActions('all',this)"><div class="family-avatar">All</div><span>All Tasks</span></button>
-                <button class="family-tab" onclick="filterActions('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button>
-                <button class="family-tab" onclick="filterActions('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button>
-                <button class="family-tab" onclick="filterActions('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button>
-                <button class="family-tab" onclick="filterActions('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button>
+        <nav class="bottom-nav">
+            <div class="nav-items">
+                <button class="nav-item active" onclick="showSection('feed')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    <span>Feed</span>
+                </button>
+                <button class="nav-item" onclick="showSection('notes')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>Notes</span>
+                </button>
+                <button class="nav-item" onclick="showSection('reminders')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                    <span>Alerts</span>
+                </button>
+                <button class="nav-item" onclick="showSection('wishlists')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span>Wishlist</span>
+                </button>
+                <button class="nav-item" onclick="showSection('calendar')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Calendar</span>
+                </button>
+                <button class="nav-item" onclick="showSection('actions')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Tasks</span>
+                </button>
             </div>
-            <div id="actions-container"></div>
-        </div>
+        </nav>
 
-        <button class="fab" onclick="openModal()">+</button>
-    </div>
-
-    <nav class="bottom-nav">
-        <div class="nav-items">
-            <button class="nav-item active" onclick="showSection('feed')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                <span>Feed</span>
-            </button>
-            <button class="nav-item" onclick="showSection('notes')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>Notes</span>
-            </button>
-            <button class="nav-item" onclick="showSection('reminders')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
-                <span>Alerts</span>
-            </button>
-            <button class="nav-item" onclick="showSection('wishlists')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                <span>Wishlist</span>
-            </button>
-            <button class="nav-item" onclick="showSection('calendar')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>Calendar</span>
-            </button>
-            <button class="nav-item" onclick="showSection('actions')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                <span>Tasks</span>
-            </button>
-        </div>
-    </nav>
-
-    <div class="modal" id="add-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Add New</h3>
-                <button class="close-btn" onclick="closeModal()">×</button>
+        <div class="modal" id="add-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Add New</h3>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="item-type" onchange="updateForm()">
+                        <option value="feed">📸 Photo to Feed</option>
+                        <option value="note">💌 Note to Family</option>
+                        <option value="reminder">⏰ Reminder</option>
+                        <option value="wishlist">🎁 Wishlist Item</option>
+                        <option value="event">📅 Calendar Event</option>
+                        <option value="task">✅ Action Task</option>
+                    </select>
+                </div>
+                <div class="form-group" id="for-group">
+                    <label>For</label>
+                    <select id="item-for">
+                        <option value="all">Everyone</option>
+                        <option value="ajay">Ajay</option>
+                        <option value="lamies">Lamies</option>
+                        <option value="amelle">Amelle</option>
+                        <option value="elissa">Elissa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title / Description</label>
+                    <input type="text" id="item-title" placeholder="What's on your mind?">
+                </div>
+                <div class="form-group" id="price-group" style="display:none">
+                    <label>Price (£)</label>
+                    <input type="number" id="item-price" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group" id="link-group" style="display:none">
+                    <label>Link (URL)</label>
+                    <input type="url" id="item-link" placeholder="https://...">
+                </div>
+                <div class="form-group" id="date-group">
+                    <label>Date</label>
+                    <input type="date" id="item-date">
+                </div>
+                <div class="form-group" id="note-group" style="display:none">
+                    <label>Message</label>
+                    <textarea id="item-note" placeholder="Write your message..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="addItem()">Add to KiN</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
             </div>
-            <div class="form-group">
-                <label>Type</label>
-                <select id="item-type" onchange="updateForm()">
-                    <option value="feed">📸 Photo to Feed</option>
-                    <option value="note">💌 Note to Family</option>
-                    <option value="reminder">⏰ Reminder</option>
-                    <option value="wishlist">🎁 Wishlist Item</option>
-                    <option value="event">📅 Calendar Event</option>
-                    <option value="task">✅ Action Task</option>
-                </select>
-            </div>
-            <div class="form-group" id="for-group">
-                <label>For</label>
-                <select id="item-for">
-                    <option value="all">Everyone</option>
-                    <option value="ajay">Ajay</option>
-                    <option value="lamies">Lamies</option>
-                    <option value="amelle">Amelle</option>
-                    <option value="elissa">Elissa</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Title / Description</label>
-                <input type="text" id="item-title" placeholder="What's on your mind?">
-            </div>
-            <div class="form-group" id="price-group" style="display:none">
-                <label>Price (£)</label>
-                <input type="number" id="item-price" placeholder="0.00" step="0.01">
-            </div>
-            <div class="form-group" id="link-group" style="display:none">
-                <label>Link (URL)</label>
-                <input type="url" id="item-link" placeholder="https://...">
-            </div>
-            <div class="form-group" id="date-group">
-                <label>Date</label>
-                <input type="date" id="item-date">
-            </div>
-            <div class="form-group" id="note-group" style="display:none">
-                <label>Message</label>
-                <textarea id="item-note" placeholder="Write your message..."></textarea>
-            </div>
-            <button class="btn btn-primary" onclick="addItem()">Add to KiN</button>
-            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
@@ -304,44 +383,430 @@
         let data={feed:JSON.parse(localStorage.getItem('kin_feed')||'[]'),notes:JSON.parse(localStorage.getItem('kin_notes')||'[]'),reminders:JSON.parse(localStorage.getItem('kin_reminders')||'[]'),wishlist:JSON.parse(localStorage.getItem('kin_wishlist')||'[]'),events:JSON.parse(localStorage.getItem('kin_events')||'[]'),tasks:JSON.parse(localStorage.getItem('kin_tasks')||'[]')};
         const users={'Ajay':'ajay','Lamies':'lamies','Amelle':'amelle','Elissa':'elissa'};
         let deferredPrompt;
+        let currentFilter='all';
         
-        document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){document.getElementById('splash').classList.add('hidden');document.getElementById('login-screen').classList.add('active')},2000);generateCalendar();renderAll()});
+        document.addEventListener('DOMContentLoaded',function(){
+            setTimeout(function(){
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('login-screen').classList.add('active')
+            },2000);
+            generateCalendar();
+            renderAll();
+        });
         
-        function login(){const u=document.getElementById('username').value.trim();const p=document.getElementById('password').value.trim();if(u!=='Kawa'){alert('Username must be "Kawa"');return}const userKey=Object.keys(users).find(n=>n.toLowerCase()===p.toLowerCase());if(userKey){currentUser=users[userKey];document.getElementById('login-screen').classList.remove('active');document.getElementById('app').classList.add('active');document.getElementById('user-badge').textContent=userKey;renderAll()}else{alert('Password must be your first name: Ajay, Lamies, Amelle, or Elissa')}}
-        function logout(){currentUser=null;document.getElementById('app').classList.remove('active');document.getElementById('login-screen').classList.add('active');document.getElementById('username').value='';document.getElementById('password').value=''}
-        function showSection(s){document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));document.getElementById(s+'-section').classList.add('active');event.currentTarget.classList.add('active')}
+        function login(){
+            const u=document.getElementById('username').value.trim();
+            const p=document.getElementById('password').value.trim();
+            if(u!=='Kawa'){alert('Username must be "Kawa"');return}
+            const userKey=Object.keys(users).find(n=>n.toLowerCase()===p.toLowerCase());
+            if(userKey){
+                currentUser=users[userKey];
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('app').classList.add('active');
+                document.getElementById('user-badge').textContent=userKey;
+                renderAll();
+            }else{
+                alert('Password must be your first name: Ajay, Lamies, Amelle, or Elissa')
+            }
+        }
+        
+        function logout(){
+            currentUser=null;
+            document.getElementById('app').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+            document.getElementById('username').value='';
+            document.getElementById('password').value='';
+        }
+        
+        function goHome(){
+            showSection('feed');
+            // Reset filter to show all
+            currentFilter='all';
+            document.querySelectorAll('#feed-section .family-tab').forEach(t=>t.classList.remove('active'));
+            document.querySelector('#feed-section .family-tab').classList.add('active');
+            renderFeed();
+        }
+        
+        function showSection(s){
+            document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+            document.getElementById(s+'-section').classList.add('active');
+            
+            // Update nav item active state
+            const navItems=document.querySelectorAll('.nav-item');
+            const sectionMap={'feed':0,'notes':1,'reminders':2,'wishlists':3,'calendar':4,'actions':5};
+            if(sectionMap[s]!==undefined) navItems[sectionMap[s]].classList.add('active');
+        }
         
         let currentMonth=new Date();
-        function generateCalendar(){const g=document.getElementById('calendar-grid');g.innerHTML='';const d=['S','M','T','W','T','F','S'];d.forEach(x=>{const e=document.createElement('div');e.className='calendar-day-header';e.textContent=x;g.appendChild(e)});const y=currentMonth.getFullYear();const m=currentMonth.getMonth();const dim=new Date(y,m+1,0).getDate();const fd=new Date(y,m,1).getDay();document.getElementById('calendar-month').textContent=currentMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'});for(let i=0;i<fd;i++)g.appendChild(document.createElement('div'));for(let i=1;i<=dim;i++){const e=document.createElement('div');e.className='calendar-day';const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;if(data.events.some(ev=>ev.date===ds))e.classList.add('has-event');if(i===new Date().getDate()&&m===new Date().getMonth())e.classList.add('active');e.textContent=i;g.appendChild(e)}}
-        function changeMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);generateCalendar()}
+        function generateCalendar(){
+            const g=document.getElementById('calendar-grid');
+            g.innerHTML='';
+            const d=['S','M','T','W','T','F','S'];
+            d.forEach(x=>{
+                const e=document.createElement('div');
+                e.className='calendar-day-header';
+                e.textContent=x;
+                g.appendChild(e)
+            });
+            const y=currentMonth.getFullYear();
+            const m=currentMonth.getMonth();
+            const dim=new Date(y,m+1,0).getDate();
+            const fd=new Date(y,m,1).getDay();
+            document.getElementById('calendar-month').textContent=currentMonth.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+            for(let i=0;i<fd;i++)g.appendChild(document.createElement('div'));
+            for(let i=1;i<=dim;i++){
+                const e=document.createElement('div');
+                e.className='calendar-day';
+                const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                if(data.events.some(ev=>ev.date===ds))e.classList.add('has-event');
+                if(i===new Date().getDate()&&m===new Date().getMonth()&&y===new Date().getFullYear())e.classList.add('active');
+                e.textContent=i;
+                g.appendChild(e)
+            }
+        }
         
-        function renderAll(){renderFeed();renderNotes();renderReminders();renderWishlist();renderEvents();renderTasks()}
-        function renderFeed(){const c=document.getElementById('feed-container');if(data.feed.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📸</div><h3>No posts yet</h3><p>Share your first photo!</p></div>';return}c.innerHTML=data.feed.sort((a,b)=>b.timestamp-a.timestamp).map(item=>`<div class="feed-item" data-person="${item.author}"><div class="feed-image" style="background:${item.image||'linear-gradient(135deg,#667eea,#764ba2)'}">📸</div><div class="feed-content"><div class="feed-header"><div class="family-avatar">${item.author[0].toUpperCase()}</div><div><div class="feed-author">${item.author.charAt(0).toUpperCase()+item.author.slice(1)}</div><div class="feed-time">${new Date(item.timestamp).toLocaleString()}</div></div></div><div class="feed-text">${item.text}</div>${item.link?`<a href="${item.link}" target="_blank" style="color:var(--red);font-size:14px;">🔗 ${item.link}</a>`:''}</div></div>`).join('')}
-        function renderNotes(){const c=document.getElementById('notes-container');if(data.notes.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">💌</div><h3>No notes yet</h3><p>Leave a message for your family!</p></div>';return}c.innerHTML=data.notes.sort((a,b)=>b.timestamp-a.timestamp).map((note,idx)=>`<div class="note-card"><button class="note-delete" onclick="deleteItem('notes',${idx})">×</button><div class="note-to">To: ${note.to==='all'?'Everyone':note.to.charAt(0).toUpperCase()+note.to.slice(1)}</div><div class="note-text">${note.text}</div><div class="note-from">From: ${note.from.charAt(0).toUpperCase()+note.from.slice(1)} • ${new Date(note.timestamp).toLocaleDateString()}</div></div>`).join('')}
-        function renderReminders(){const c=document.getElementById('reminders-container');if(data.reminders.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">⏰</div><h3>No reminders</h3><p>Set your first reminder!</p></div>';return}c.innerHTML=data.reminders.sort((a,b)=>new Date(a.date)-new Date(b.date)).map((item,idx)=>`<div class="reminder-item"><div class="reminder-icon">⏰</div><div class="reminder-content"><div class="reminder-title">${item.title}</div><div class="reminder-time">${new Date(item.date).toLocaleDateString()} • ${item.for==='all'?'Everyone':item.for.charAt(0).toUpperCase()+item.for.slice(1)}</div></div><button class="reminder-delete" onclick="deleteItem('reminders',${idx})">×</button></div>`).join('')}
-        function renderWishlist(){const c=document.getElementById('wishlist-container');if(data.wishlist.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">🎁</div><h3>Wishlist empty</h3><p>Add your first wish!</p></div>';return}c.innerHTML=data.wishlist.map((item,idx)=>`<div class="wishlist-item" data-person="${item.for}"><div class="wishlist-image">🎁</div><div class="wishlist-info"><div class="wishlist-title">${item.title}${item.bought?'<span class="bought-badge">Bought</span>':''}</div><div class="wishlist-price">£${item.price}</div>${item.link?`<a href="${item.link}" target="_blank" class="wishlist-link">${item.link}</a>`:''}<span class="todo-assignee">${item.for.charAt(0).toUpperCase()+item.for.slice(1)}'s List</span></div>${currentUser!==item.for?`<button onclick="toggleBought(${idx})" style="background:${item.bought?'var(--grey-light)':'var(--red)'};color:${item.bought?'var(--grey)':'white'};border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px">${item.bought?'Bought':'Mark Bought'}</button>`:''}</div>`).join('')}
-        function renderEvents(){const c=document.getElementById('events-container');if(data.events.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📅</div><h3>No events</h3><p>Add your first event!</p></div>';return}c.innerHTML=data.events.sort((a,b)=>new Date(a.date)-new Date(b.date)).map((event,idx)=>{const d=new Date(event.date);const tc=event.type==='travel'?'travel':event.type==='school'?'school':'';return`<div class="event-item ${tc}"><div class="event-time"><div class="event-day">${d.getDate()}</div><div class="event-month">${d.toLocaleDateString('en-US',{month:'short'})}</div></div><div style="flex:1"><div style="font-weight:600">${event.title}</div><div style="font-size:13px;color:var(--grey)">${event.for==='all'?'Everyone':event.for.charAt(0).toUpperCase()+event.for.slice(1)} • ${event.type}</div></div><button class="event-delete" onclick="deleteItem('events',${idx})">×</button></div>`}).join('')}
-        function renderTasks(){const c=document.getElementById('actions-container');if(data.tasks.length===0){c.innerHTML='<div class="empty-state"><div class="empty-state-icon">✅</div><h3>No tasks</h3><p>Create your first task!</p></div>';return}c.innerHTML=data.tasks.map((task,idx)=>`<div class="todo-item" data-person="${task.for}"><div class="todo-checkbox ${task.completed?'checked':''}" onclick="toggleTask(${idx})"></div><div class="todo-text ${task.completed?'completed':''}"><div>${task.title}</div><span class="todo-assignee">For: ${task.for.charAt(0).toUpperCase()+task.for.slice(1)}</span></div><button class="todo-delete" onclick="deleteItem('tasks',${idx})">×</button></div>`).join('')}
+        function changeMonth(dir){
+            currentMonth.setMonth(currentMonth.getMonth()+dir);
+            generateCalendar();
+        }
         
-        function toggleTask(idx){data.tasks[idx].completed=!data.tasks[idx].completed;saveData();renderTasks()}
-        function toggleBought(idx){data.wishlist[idx].bought=!data.wishlist[idx].bought;saveData();renderWishlist()}
-        function deleteItem(type,idx){if(confirm('Delete this item?')){data[type].splice(idx,1);saveData();renderAll()}}
-        function saveData(){Object.keys(data).forEach(key=>localStorage.setItem('kin_'+key,JSON.stringify(data[key])))}
+        function renderAll(){
+            renderFeed();
+            renderNotes();
+            renderReminders();
+            renderWishlist();
+            renderEvents();
+            renderTasks();
+        }
         
-        function openModal(){document.getElementById('add-modal').classList.add('active');document.getElementById('item-date').valueAsDate=new Date();document.getElementById('item-for').value=currentUser||'all'}
-        function closeModal(){document.getElementById('add-modal').classList.remove('active')}
-        function updateForm(){const t=document.getElementById('item-type').value;document.getElementById('price-group').style.display=t==='wishlist'?'block':'none';document.getElementById('link-group').style.display=(t==='wishlist'||t==='feed')?'block':'none';document.getElementById('note-group').style.display=t==='note'?'block':'none';document.getElementById('date-group').style.display=(t==='note'||t==='feed')?'none':'block';document.getElementById('for-group').style.display='block'}
-        function addItem(){const t=document.getElementById('item-type').value;const fp=document.getElementById('item-for').value;const title=document.getElementById('item-title').value.trim();const price=document.getElementById('item-price').value;const link=document.getElementById('item-link').value.trim();const date=document.getElementById('item-date').value;const note=document.getElementById('item-note').value.trim();if(!title&&!note){alert('Please enter a title or message');return}const newItem={timestamp:Date.now(),author:currentUser||'ajay',for:fp||'all'};switch(t){case'feed':newItem.text=title||note;newItem.link=link;newItem.image=null;data.feed.push(newItem);break;case'note':newItem.text=note||title;newItem.to=fp||'all';newItem.from=currentUser||'ajay';data.notes.push(newItem);break;case'reminder':newItem.title=title;newItem.date=date||new Date().toISOString().split('T')[0];data.reminders.push(newItem);break;case'wishlist':newItem.title=title;newItem.price=price||'0';newItem.link=link;newItem.bought=false;data.wishlist.push(newItem);break;case'event':newItem.title=title;newItem.date=date||new Date().toISOString().split('T')[0];newItem.type='general';data.events.push(newItem);break;case'task':newItem.title=title;newItem.completed=false;data.tasks.push(newItem);break}saveData();renderAll();closeModal();document.getElementById('item-title').value='';document.getElementById('item-price').value='';document.getElementById('item-link').value='';document.getElementById('item-note').value=''}
+        function renderFeed(){
+            const c=document.getElementById('feed-container');
+            let displayData=data.feed;
+            
+            // Apply filter if not 'all'
+            if(currentFilter!=='all'){
+                displayData=data.feed.filter(item=>item.author===currentFilter);
+            }
+            
+            if(displayData.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📸</div><h3>No posts yet</h3><p>Share your first photo!</p></div>';
+                return;
+            }
+            
+            c.innerHTML=displayData.sort((a,b)=>b.timestamp-a.timestamp).map(item=>{
+                const authorName=item.author.charAt(0).toUpperCase()+item.author.slice(1);
+                return`<div class="feed-item" data-person="${item.author}">
+                    <div class="feed-image" style="background:${item.image||'linear-gradient(135deg,#667eea,#764ba2)'}">📸</div>
+                    <div class="feed-content">
+                        <div class="feed-header">
+                            <div class="family-avatar">${item.author[0].toUpperCase()}</div>
+                            <div>
+                                <div class="feed-author">${authorName}</div>
+                                <div class="feed-time">${new Date(item.timestamp).toLocaleString('en-GB')}</div>
+                            </div>
+                        </div>
+                        <div class="feed-text">${item.text}</div>
+                        ${item.link?`<a href="${item.link}" target="_blank" style="color:var(--red);font-size:14px;">🔗 ${item.link}</a>`:''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
         
-        function filterByPerson(p,b){document.querySelectorAll('#feed-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#feed-container .feed-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'block':'none'})}
-        function filterWishlist(p,b){document.querySelectorAll('#wishlists-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#wishlist-container .wishlist-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'flex':'none'})}
-        function filterActions(p,b){document.querySelectorAll('#actions-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#actions-container .todo-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'flex':'none'})}
-        function showNotifications(){alert('🔔 You have '+(data.reminders.length+data.tasks.filter(t=>!t.completed).length)+' pending items')}
-        document.getElementById('add-modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+        function renderNotes(){
+            const c=document.getElementById('notes-container');
+            if(data.notes.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">💌</div><h3>No notes yet</h3><p>Leave a message for your family!</p></div>';
+                return;
+            }
+            c.innerHTML=data.notes.sort((a,b)=>b.timestamp-a.timestamp).map((note,idx)=>{
+                const toName=note.to==='all'?'Everyone':note.to.charAt(0).toUpperCase()+note.to.slice(1);
+                const fromName=note.from.charAt(0).toUpperCase()+note.from.slice(1);
+                return`<div class="note-card">
+                    <button class="note-delete" onclick="deleteItem('notes',${idx})">×</button>
+                    <div class="note-to">To: ${toName}</div>
+                    <div class="note-text">${note.text}</div>
+                    <div class="note-from">From: ${fromName} • ${new Date(note.timestamp).toLocaleDateString('en-GB')}</div>
+                </div>`;
+            }).join('');
+        }
         
-        window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-btn').style.display='flex'});
-        function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then((choiceResult)=>{if(choiceResult.outcome==='accepted'){document.getElementById('install-btn').style.display='none'}deferredPrompt=null})}else{alert('To install: Tap Share button → Add to Home Screen')}}
-        if('serviceWorker'in navigator){navigator.serviceWorker.register('service-worker.js')}
+        function renderReminders(){
+            const c=document.getElementById('reminders-container');
+            if(data.reminders.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">⏰</div><h3>No reminders</h3><p>Set your first reminder!</p></div>';
+                return;
+            }
+            c.innerHTML=data.reminders.sort((a,b)=>new Date(a.date)-new Date(b.date)).map((item,idx)=>{
+                const forName=item.for==='all'?'Everyone':item.for.charAt(0).toUpperCase()+item.for.slice(1);
+                return`<div class="reminder-item">
+                    <div class="reminder-icon">⏰</div>
+                    <div class="reminder-content">
+                        <div class="reminder-title">${item.title}</div>
+                        <div class="reminder-time">${new Date(item.date).toLocaleDateString('en-GB')} • ${forName}</div>
+                    </div>
+                    <button class="reminder-delete" onclick="deleteItem('reminders',${idx})">×</button>
+                </div>`;
+            }).join('');
+        }
+        
+        function renderWishlist(){
+            const c=document.getElementById('wishlist-container');
+            let displayData=data.wishlist;
+            
+            // Check if filtered
+            const activeTab=document.querySelector('#wishlists-section .family-tab.active');
+            const filter=activeTab?activeTab.getAttribute('onclick').match(/'([^']+)'/)[1]:'all';
+            
+            if(filter!=='all'){
+                displayData=data.wishlist.filter(item=>item.for===filter);
+            }
+            
+            if(displayData.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">🎁</div><h3>Wishlist empty</h3><p>Add your first wish!</p></div>';
+                return;
+            }
+            
+            c.innerHTML=displayData.map((item,idx)=>{
+                const forName=item.for.charAt(0).toUpperCase()+item.for.slice(1);
+                return`<div class="wishlist-item" data-person="${item.for}">
+                    <div class="wishlist-image">🎁</div>
+                    <div class="wishlist-info">
+                        <div class="wishlist-title">${item.title}${item.bought?'<span class="bought-badge">Bought</span>':''}</div>
+                        <div class="wishlist-price">£${item.price}</div>
+                        ${item.link?`<a href="${item.link}" target="_blank" class="wishlist-link">${item.link}</a>`:''}
+                        <span class="todo-assignee">${forName}'s List</span>
+                    </div>
+                    ${currentUser!==item.for?`<button onclick="toggleBought(${idx})" style="background:${item.bought?'var(--grey-light)':'var(--red)'};color:${item.bought?'var(--grey)':'white'};border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px">${item.bought?'Bought':'Mark Bought'}</button>`:''}
+                </div>`;
+            }).join('');
+        }
+        
+        function renderEvents(){
+            const c=document.getElementById('events-container');
+            if(data.events.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📅</div><h3>No events</h3><p>Add your first event!</p></div>';
+                return;
+            }
+            c.innerHTML=data.events.sort((a,b)=>new Date(a.date)-new Date(b.date)).map((event,idx)=>{
+                const d=new Date(event.date);
+                const tc=event.type==='travel'?'travel':event.type==='school'?'school':'';
+                const forName=event.for==='all'?'Everyone':event.for.charAt(0).toUpperCase()+event.for.slice(1);
+                return`<div class="event-item ${tc}">
+                    <div class="event-time">
+                        <div class="event-day">${d.getDate()}</div>
+                        <div class="event-month">${d.toLocaleDateString('en-GB',{month:'short'})}</div>
+                    </div>
+                    <div style="flex:1">
+                        <div style="font-weight:600">${event.title}</div>
+                        <div style="font-size:13px;color:var(--grey)">${forName} • ${event.type}</div>
+                    </div>
+                    <button class="event-delete" onclick="deleteItem('events',${idx})">×</button>
+                </div>`;
+            }).join('');
+        }
+        
+        function renderTasks(){
+            const c=document.getElementById('actions-container');
+            let displayData=data.tasks;
+            
+            // Check if filtered
+            const activeTab=document.querySelector('#actions-section .family-tab.active');
+            const filter=activeTab?activeTab.getAttribute('onclick').match(/'([^']+)'/)[1]:'all';
+            
+            if(filter!=='all'){
+                displayData=data.tasks.filter(item=>item.for===filter);
+            }
+            
+            if(displayData.length===0){
+                c.innerHTML='<div class="empty-state"><div class="empty-state-icon">✅</div><h3>No tasks</h3><p>Create your first task!</p></div>';
+                return;
+            }
+            
+            c.innerHTML=displayData.map((task,idx)=>{
+                const forName=task.for.charAt(0).toUpperCase()+task.for.slice(1);
+                return`<div class="todo-item" data-person="${task.for}">
+                    <div class="todo-checkbox ${task.completed?'checked':''}" onclick="toggleTask(${idx})"></div>
+                    <div class="todo-text ${task.completed?'completed':''}">
+                        <div>${task.title}</div>
+                        <span class="todo-assignee">For: ${forName}</span>
+                    </div>
+                    <button class="todo-delete" onclick="deleteItem('tasks',${idx})">×</button>
+                </div>`;
+            }).join('');
+        }
+        
+        function toggleTask(idx){
+            data.tasks[idx].completed=!data.tasks[idx].completed;
+            saveData();
+            renderTasks();
+        }
+        
+        function toggleBought(idx){
+            data.wishlist[idx].bought=!data.wishlist[idx].bought;
+            saveData();
+            renderWishlist();
+        }
+        
+        function deleteItem(type,idx){
+            if(confirm('Delete this item?')){
+                data[type].splice(idx,1);
+                saveData();
+                renderAll();
+            }
+        }
+        
+        function saveData(){
+            Object.keys(data).forEach(key=>localStorage.setItem('kin_'+key,JSON.stringify(data[key])));
+        }
+        
+        function openModal(){
+            document.getElementById('add-modal').classList.add('active');
+            document.getElementById('item-date').valueAsDate=new Date();
+            document.getElementById('item-for').value=currentUser||'all';
+        }
+        
+        function closeModal(){
+            document.getElementById('add-modal').classList.remove('active');
+        }
+        
+        function updateForm(){
+            const t=document.getElementById('item-type').value;
+            document.getElementById('price-group').style.display=t==='wishlist'?'block':'none';
+            document.getElementById('link-group').style.display=(t==='wishlist'||t==='feed')?'block':'none';
+            document.getElementById('note-group').style.display=t==='note'?'block':'none';
+            document.getElementById('date-group').style.display=(t==='note'||t==='feed')?'none':'block';
+            document.getElementById('for-group').style.display='block';
+        }
+        
+        function addItem(){
+            const t=document.getElementById('item-type').value;
+            const fp=document.getElementById('item-for').value;
+            const title=document.getElementById('item-title').value.trim();
+            const price=document.getElementById('item-price').value;
+            const link=document.getElementById('item-link').value.trim();
+            const date=document.getElementById('item-date').value;
+            const note=document.getElementById('item-note').value.trim();
+            
+            if(!title&&!note){
+                alert('Please enter a title or message');
+                return;
+            }
+            
+            const newItem={
+                timestamp:Date.now(),
+                author:currentUser||'ajay',
+                for:fp||'all'
+            };
+            
+            switch(t){
+                case'feed':
+                    newItem.text=title||note;
+                    newItem.link=link;
+                    newItem.image=null;
+                    data.feed.push(newItem);
+                    break;
+                case'note':
+                    newItem.text=note||title;
+                    newItem.to=fp||'all';
+                    newItem.from=currentUser||'ajay';
+                    data.notes.push(newItem);
+                    break;
+                case'reminder':
+                    newItem.title=title;
+                    newItem.date=date||new Date().toISOString().split('T')[0];
+                    data.reminders.push(newItem);
+                    break;
+                case'wishlist':
+                    newItem.title=title;
+                    newItem.price=price||'0';
+                    newItem.link=link;
+                    newItem.bought=false;
+                    data.wishlist.push(newItem);
+                    break;
+                case'event':
+                    newItem.title=title;
+                    newItem.date=date||new Date().toISOString().split('T')[0];
+                    newItem.type='general';
+                    data.events.push(newItem);
+                    break;
+                case'task':
+                    newItem.title=title;
+                    newItem.completed=false;
+                    data.tasks.push(newItem);
+                    break;
+            }
+            
+            saveData();
+            renderAll();
+            closeModal();
+            document.getElementById('item-title').value='';
+            document.getElementById('item-price').value='';
+            document.getElementById('item-link').value='';
+            document.getElementById('item-note').value='';
+        }
+        
+        function filterByPerson(p,b){
+            currentFilter=p;
+            document.querySelectorAll('#feed-section .family-tab').forEach(t=>t.classList.remove('active'));
+            b.classList.add('active');
+            renderFeed();
+        }
+        
+        function filterWishlist(p,b){
+            document.querySelectorAll('#wishlists-section .family-tab').forEach(t=>t.classList.remove('active'));
+            b.classList.add('active');
+            renderWishlist();
+        }
+        
+        function filterActions(p,b){
+            document.querySelectorAll('#actions-section .family-tab').forEach(t=>t.classList.remove('active'));
+            b.classList.add('active');
+            renderTasks();
+        }
+        
+        function showNotifications(){
+            const count=data.reminders.length+data.tasks.filter(t=>!t.completed).length;
+            alert(`🔔 You have ${count} pending items`);
+        }
+        
+        document.getElementById('add-modal').addEventListener('click',function(e){
+            if(e.target===this)closeModal();
+        });
+        
+        window.addEventListener('beforeinstallprompt',(e)=>{
+            e.preventDefault();
+            deferredPrompt=e;
+            document.getElementById('install-btn').style.display='flex';
+        });
+        
+        function installApp(){
+            if(deferredPrompt){
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult)=>{
+                    if(choiceResult.outcome==='accepted'){
+                        document.getElementById('install-btn').style.display='none';
+                    }
+                    deferredPrompt=null;
+                });
+            }else{
+                alert('To install: Tap Share button → Add to Home Screen');
+            }
+        }
+        
+        if('serviceWorker'in navigator){
+            navigator.serviceWorker.register('service-worker.js');
+        }
+        
+        // Prevent zoom on double tap
+        let lastTouchEnd=0;
+        document.addEventListener('touchend',function(e){
+            const now=Date.now();
+            if(now-lastTouchEnd<=300){
+                e.preventDefault();
+            }
+            lastTouchEnd=now;
+        },false);
     </script>
 </body>
 </html>
