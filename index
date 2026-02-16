@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KiN - The Kawa Family</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="kin.png">
+    <link rel="icon" type="image/png" href="kin.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--black:#000;--white:#fff;--red:#ff3333;--grey-light:#f5f5f5;--grey:#999;--grey-dark:#333}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--white);color:var(--black);line-height:1.6;overflow-x:hidden}
+        #splash{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;transition:opacity .5s}
+        #splash.hidden{opacity:0;pointer-events:none}
+        .splash-logo-img{width:120px;height:120px;margin-bottom:20px}
+        .splash-subtitle{color:var(--grey);font-size:16px;letter-spacing:2px}
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--white);display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px;z-index:9998}
+        #login-screen.active{display:flex}
+        .login-box{width:100%;max-width:350px;text-align:center}
+        .login-logo-img{width:80px;height:80px;margin-bottom:20px}
+        .login-title{font-size:24px;font-weight:700;margin-bottom:5px}
+        .login-subtitle{color:var(--grey);font-size:14px;margin-bottom:40px}
+        .input-group{margin-bottom:20px;text-align:left}
+        .input-group label{display:block;font-size:12px;font-weight:600;color:var(--grey-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .input-group input{width:100%;padding:16px;border:2px solid #e0e0e0;border-radius:12px;font-size:16px;background:var(--white)}
+        .input-group input:focus{outline:none;border-color:var(--black)}
+        .btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}
+        .btn-primary{background:var(--black);color:var(--white)}
+        #app{display:none;min-height:100vh;padding-bottom:90px}
+        #app.active{display:block}
+        .header{background:var(--white);padding:15px 20px;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:100}
+        .header-content{display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:0 auto}
+        .header-logo-img{height:40px}
+        .header-actions{display:flex;gap:15px}
+        .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--grey-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid #f0f0f0;padding:10px 0;z-index:100}
+        .nav-items{display:flex;justify-content:space-around;max-width:600px;margin:0 auto}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 10px;cursor:pointer;border:none;background:none;color:var(--grey);font-size:10px;font-weight:500}
+        .nav-item.active{color:var(--black)}
+        .nav-item svg{width:22px;height:22px;stroke-width:2}
+        .section{display:none;padding:20px;max-width:600px;margin:0 auto;animation:fadeIn .3s}
+        .section.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .section-title{font-size:28px;font-weight:700;margin-bottom:20px}
+        .family-tabs{display:flex;gap:10px;margin-bottom:20px;overflow-x:auto;padding-bottom:10px}
+        .family-tabs::-webkit-scrollbar{display:none}
+        .family-tab{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:50px;border:2px solid #e0e0e0;background:var(--white);cursor:pointer;white-space:nowrap;font-weight:500}
+        .family-tab.active{border-color:var(--black);background:var(--black);color:var(--white)}
+        .family-avatar{width:28px;height:28px;border-radius:50%;background:var(--grey-light);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+        .family-tab.active .family-avatar{background:var(--white);color:var(--black)}
+        .card{background:var(--white);border-radius:16px;padding:20px;margin-bottom:15px;border:1px solid #f0f0f0}
+        .feed-item{background:var(--white);border-radius:16px;overflow:hidden;margin-bottom:20px;border:1px solid #f0f0f0}
+        .feed-image{width:100%;height:280px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;background:linear-gradient(135deg,#667eea,#764ba2)}
+        .feed-content{padding:20px}
+        .feed-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .feed-author{font-weight:600}
+        .feed-time{font-size:12px;color:var(--grey)}
+        .wishlist-item{display:flex;gap:15px;padding:15px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0}
+        .wishlist-image{width:80px;height:80px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#fa709a,#fee140)}
+        .wishlist-info{flex:1}
+        .wishlist-title{font-weight:600;margin-bottom:5px;font-size:15px}
+        .wishlist-price{color:var(--red);font-weight:700;font-size:18px;margin-bottom:5px}
+        .wishlist-link{font-size:12px;color:var(--grey);text-decoration:none}
+        .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .calendar-month{font-size:20px;font-weight:700}
+        .calendar-nav{display:flex;gap:10px}
+        .calendar-nav button{width:36px;height:36px;border-radius:50%;border:1px solid #e0e0e0;background:var(--white);cursor:pointer;font-size:16px}
+        .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:30px}
+        .calendar-day-header{text-align:center;font-size:12px;font-weight:600;color:var(--grey);padding:10px 0}
+        .calendar-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:14px;cursor:pointer;position:relative}
+        .calendar-day.active{background:var(--black);color:var(--white)}
+        .calendar-day.has-event::after{content:'';position:absolute;bottom:6px;width:4px;height:4px;background:var(--red);border-radius:50%}
+        .event-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0;border-left:4px solid var(--black)}
+        .event-item.travel{border-left-color:var(--red)}
+        .event-item.school{border-left-color:#4ecdc4}
+        .event-time{text-align:center;min-width:45px}
+        .event-day{font-weight:700;font-size:20px}
+        .event-month{font-size:11px;color:var(--grey);text-transform:uppercase}
+        .todo-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0}
+        .todo-checkbox{width:24px;height:24px;border:2px solid #e0e0e0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .todo-checkbox.checked{background:var(--black);border-color:var(--black)}
+        .todo-checkbox.checked::after{content:'✓';color:#fff;font-weight:bold;font-size:14px}
+        .todo-text{flex:1}
+        .todo-text.completed{text-decoration:line-through;color:var(--grey)}
+        .todo-assignee{font-size:11px;color:var(--red);font-weight:600;text-transform:uppercase}
+        .note-card{background:var(--grey-light);padding:20px;border-radius:16px;margin-bottom:15px}
+        .note-card:nth-child(even){background:var(--black);color:var(--white)}
+        .note-to{font-size:11px;font-weight:600;opacity:.6;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .note-text{font-size:16px;line-height:1.5;font-weight:500}
+        .note-from{font-size:11px;margin-top:12px;opacity:.6;text-align:right}
+        .reminder-item{display:flex;align-items:center;gap:15px;padding:16px;background:var(--white);border-radius:16px;margin-bottom:12px;border:1px solid #f0f0f0;border-left:4px solid var(--red)}
+        .reminder-icon{width:44px;height:44px;border-radius:12px;background:var(--grey-light);display:flex;align-items:center;justify-content:center;font-size:20px}
+        .reminder-content{flex:1}
+        .reminder-title{font-weight:600;margin-bottom:4px}
+        .reminder-time{font-size:12px;color:var(--grey)}
+        .fab{position:fixed;bottom:100px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--black);color:var(--white);border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:90;display:flex;align-items:center;justify-content:center}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+        .modal.active{display:flex}
+        .modal-content{background:var(--white);width:100%;max-width:500px;border-radius:24px 24px 0 0;padding:30px;animation:slideUp .3s;max-height:90vh;overflow-y:auto}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+        .modal-title{font-size:24px;font-weight:700}
+        .close-btn{background:none;border:none;font-size:28px;cursor:pointer;color:var(--grey);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+        .form-group{margin-bottom:20px}
+        .form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--grey-dark);font-size:14px}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:16px;border:2px solid #e0e0e0;border-radius:12px;font-size:16px;font-family:inherit}
+        .form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--black)}
+        .form-group textarea{resize:vertical;min-height:100px}
+        .btn-secondary{background:var(--grey-light);color:var(--black);margin-top:10px}
+    </style>
+</head>
+<body>
+    <div id="splash"><img src="kin.png" alt="KiN" class="splash-logo-img"><div class="splash-subtitle">THE KAWA FAMILY</div></div>
+    <div id="login-screen"><div class="login-box"><img src="kin.png" alt="KiN" class="login-logo-img"><div class="login-title">Welcome Home</div><div class="login-subtitle">The Kawa Family Portal</div><div class="input-group"><label>Username</label><input type="text" id="username" placeholder="Enter username"></div><div class="input-group"><label>Password</label><input type="password" id="password" placeholder="Enter password"></div><button class="btn btn-primary" onclick="login()">Enter KiN</button></div></div>
+    <div id="app">
+        <div class="header"><div class="header-content"><img src="kin.png" alt="KiN" class="header-logo-img"><div class="header-actions"><button class="icon-btn" onclick="showNotifications()">🔔</button><button class="icon-btn" onclick="logout()">→</button></div></div></div>
+        <div class="section active" id="feed-section"><div class="family-tabs"><button class="family-tab active" onclick="filterByPerson('all',this)"><div class="family-avatar">All</div><span>Everyone</span></button><button class="family-tab" onclick="filterByPerson('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button><button class="family-tab" onclick="filterByPerson('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button><button class="family-tab" onclick="filterByPerson('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button><button class="family-tab" onclick="filterByPerson('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button></div><div id="feed-container"><div class="feed-item" data-person="ajay"><div class="feed-image">📸</div><div class="feed-content"><div class="feed-header"><div class="family-avatar">A</div><div><div class="feed-author">Ajay</div><div class="feed-time">2 hours ago</div></div></div><div class="feed-text">Beautiful day at the park with the girls! 🌳☀️</div></div></div><div class="feed-item" data-person="lamies"><div class="feed-image" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🍝</div><div class="feed-content"><div class="feed-header"><div class="family-avatar" style="background:var(--grey-dark);color:white">L</div><div><div class="feed-author">Lamies</div><div class="feed-time">5 hours ago</div></div></div><div class="feed-text">New recipe turned out amazing! Dinner is served 🍝</div></div></div></div></div>
+        <div class="section" id="notes-section"><h2 class="section-title">Family Notes</h2><div id="notes-container"><div class="note-card"><div class="note-to">To: Everyone</div><div class="note-text">Don't forget to pick up milk on the way home!</div><div class="note-from">From: Lamies 💕</div></div><div class="note-card"><div class="note-to">To: Ajay</div><div class="note-text">Good luck with your meeting today! You've got this 💪</div><div class="note-from">From: Amelle</div></div><div class="note-card"><div class="note-to">To: Amelle & Elissa</div><div class="note-text">Homework done? Ice cream after dinner if yes! 🍦</div><div class="note-from">From: Ajay</div></div></div></div>
+        <div class="section" id="reminders-section"><h2 class="section-title">Reminders</h2><div id="reminders-container"><div class="reminder-item"><div class="reminder-icon">🦷</div><div class="reminder-content"><div class="reminder-title">Dentist Appointment</div><div class="reminder-time">Tomorrow at 4:00 PM • Amelle & Elissa</div></div><span class="todo-assignee">Lamies</span></div><div class="reminder-item" style="border-left-color:var(--black)"><div class="reminder-icon">✈️</div><div class="reminder-content"><div class="reminder-title">Book Flight to Dubai</div><div class="reminder-time">In 3 days • Check Emirates</div></div><span class="todo-assignee">Ajay</span></div><div class="reminder-item" style="border-left-color:#4ecdc4"><div class="reminder-icon">📚</div><div class="reminder-content"><div class="reminder-title">School Project Due</div><div class="reminder-time">Friday • Science fair prep</div></div><span class="todo-assignee">Amelle</span></div></div></div>
+        <div class="section" id="wishlists-section"><div class="family-tabs"><button class="family-tab active" onclick="filterWishlist('all',this)"><div class="family-avatar">All</div><span>All Lists</span></button><button class="family-tab" onclick="filterWishlist('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button><button class="family-tab" onclick="filterWishlist('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button><button class="family-tab" onclick="filterWishlist('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button><button class="family-tab" onclick="filterWishlist('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button></div><div id="wishlist-container"><div class="wishlist-item" data-person="amelle"><div class="wishlist-image">🎧</div><div class="wishlist-info"><div class="wishlist-title">Wireless Headphones</div><div class="wishlist-price">£149.99</div><a href="#" class="wishlist-link">amazon.co.uk/dp/B08...</a><span class="todo-assignee" style="display:block;margin-top:5px">Amelle's List</span></div></div><div class="wishlist-item" data-person="elissa"><div class="wishlist-image" style="background:linear-gradient(135deg,#a8edea,#fed6e3)">🎨</div><div class="wishlist-info"><div class="wishlist-title">Art Supplies Set</div><div class="wishlist-price">£34.50</div><a href="#" class="wishlist-link">cassart.co.uk/paints...</a><span class="todo-assignee" style="display:block;margin-top:5px">Elissa's List</span></div></div><div class="wishlist-item" data-person="lamies"><div class="wishlist-image" style="background:linear-gradient(135deg,#ffecd2,#fcb69f)">☕</div><div class="wishlist-info"><div class="wishlist-title">Nespresso Machine</div><div class="wishlist-price">£199.00</div><a href="#" class="wishlist-link">johnlewis.com/nespr...</a><span class="todo-assignee" style="display:block;margin-top:5px">Lamies' List</span></div></div></div></div>
+        <div class="section" id="calendar-section"><h2 class="section-title">Family Calendar</h2><div class="calendar-header"><div class="calendar-month">February 2026</div><div class="calendar-nav"><button onclick="changeMonth(-1)">←</button><button onclick="changeMonth(1)">→</button></div></div><div class="card"><div class="calendar-grid" id="calendar-grid"></div></div><h3 style="margin:25px 0 15px;font-size:18px;font-weight:600">Upcoming Events</h3><div id="events-container"><div class="event-item school"><div class="event-time"><div class="event-day">14</div><div class="event-month">Feb</div></div><div style="flex:1"><div style="font-weight:600">Parent-Teacher Meeting</div><div style="font-size:13px;color:var(--grey)">Amelle's School • 6:00 PM</div></div></div><div class="event-item travel"><div class="event-time"><div class="event-day">20</div><div class="event-month">Feb</div></div><div style="flex:1"><div style="font-weight:600">Weekend Trip to Brighton</div><div style="font-size:13px;color:var(--grey)">All Day • Family Travel</div></div></div><div class="event-item"><div class="event-time"><div class="event-day">28</div><div class="event-month">Feb</div></div><div style="flex:1"><div style="font-weight:600">Sarah's Birthday Party</div><div style="font-size:13px;color:var(--grey)">2:00 PM • Social</div></div></div></div></div>
+        <div class="section" id="actions-section"><h2 class="section-title">Action Lists</h2><div class="family-tabs"><button class="family-tab active" onclick="filterActions('all',this)"><div class="family-avatar">All</div><span>All Tasks</span></button><button class="family-tab" onclick="filterActions('ajay',this)"><div class="family-avatar">A</div><span>Ajay</span></button><button class="family-tab" onclick="filterActions('lamies',this)"><div class="family-avatar">L</div><span>Lamies</span></button><button class="family-tab" onclick="filterActions('amelle',this)"><div class="family-avatar">Am</div><span>Amelle</span></button><button class="family-tab" onclick="filterActions('elissa',this)"><div class="family-avatar">E</div><span>Elissa</span></button></div><div id="actions-container"><div class="todo-item" data-person="amelle"><div class="todo-checkbox" onclick="toggleTodo(this)"></div><div class="todo-text"><div>Complete Math worksheet - Chapter 5</div><span class="todo-assignee">For: Amelle</span></div></div><div class="todo-item" data-person="ajay"><div class="todo-checkbox" onclick="toggleTodo(this)"></div><div class="todo-text"><div>Call plumber for kitchen sink leak</div><span class="todo-assignee">For: Ajay</span></div></div><div class="todo-item" data-person="lamies"><div class="todo-checkbox checked" onclick="toggleTodo(this)"></div><div class="todo-text completed"><div>Buy birthday gift for Sarah</div><span class="todo-assignee">For: Lamies</span></div></div><div class="todo-item" data-person="elissa"><div class="todo-checkbox" onclick="toggleTodo(this)"></div><div class="todo-text"><div>Practice piano - 30 minutes</div><span class="todo-assignee">For: Elissa</span></div></div></div></div>
+        <button class="fab" onclick="openModal()">+</button>
+    </div>
+    <nav class="bottom-nav"><div class="nav-items"><button class="nav-item active" onclick="showSection('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span>Feed</span></button><button class="nav-item" onclick="showSection('notes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Notes</span></button><button class="nav-item" onclick="showSection('reminders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg><span>Alerts</span></button><button class="nav-item" onclick="showSection('wishlists')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Wishlist</span></button><button class="nav-item" onclick="showSection('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Calendar</span></button><button class="nav-item" onclick="showSection('actions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Tasks</span></button></div></nav>
+    <div class="modal" id="add-modal"><div class="modal-content"><div class="modal-header"><h3 class="modal-title">Add New</h3><button class="close-btn" onclick="closeModal()">×</button></div><div class="form-group"><label>Type</label><select id="item-type" onchange="updateForm()"><option value="feed">📸 Photo to Feed</option><option value="note">💌 Note to Family</option><option value="reminder">⏰ Reminder</option><option value="wishlist">🎁 Wishlist Item</option><option value="event">📅 Calendar Event</option><option value="task">✅ Action Task</option></select></div><div class="form-group"><label>For</label><select id="item-for"><option value="all">Everyone</option><option value="ajay">Ajay</option><option value="lamies">Lamies</option><option value="amelle">Amelle</option><option value="elissa">Elissa</option></select></div><div class="form-group"><label>Title / Description</label><input type="text" id="item-title" placeholder="What's on your mind?"></div><div class="form-group" id="price-group" style="display:none"><label>Price (£)</label><input type="number" id="item-price" placeholder="0.00" step="0.01"></div><div class="form-group" id="link-group" style="display:none"><label>Link (optional)</label><input type="url" id="item-link" placeholder="https://..."></div><div class="form-group"><label>Date (if applicable)</label><input type="date" id="item-date"></div><div class="form-group" id="note-group" style="display:none"><label>Note</label><textarea id="item-note" placeholder="Add more details..."></textarea></div><button class="btn btn-primary" onclick="addItem()">Add to KiN</button><button class="btn btn-secondary" onclick="closeModal()">Cancel</button></div></div>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){document.getElementById('splash').classList.add('hidden');document.getElementById('login-screen').classList.add('active')},2000);generateCalendar()});
+        function login(){var u=document.getElementById('username').value;var p=document.getElementById('password').value;if(u==='Kawa'&&p==='Family'){document.getElementById('login-screen').classList.remove('active');document.getElementById('app').classList.add('active')}else{alert('Incorrect username or password')}}
+        function logout(){document.getElementById('app').classList.remove('active');document.getElementById('login-screen').classList.add('active');document.getElementById('username').value='';document.getElementById('password').value=''}
+        function showSection(s){document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));document.getElementById(s+'-section').classList.add('active');event.currentTarget.classList.add('active')}
+        function generateCalendar(){var g=document.getElementById('calendar-grid');var d=['S','M','T','W','T','F','S'];d.forEach(x=>{var e=document.createElement('div');e.className='calendar-day-header';e.textContent=x;g.appendChild(e)});for(var i=1;i<=28;i++){var e=document.createElement('div');e.className='calendar-day';if(i===16)e.classList.add('active');if([14,20,25,28].includes(i))e.classList.add('has-event');e.textContent=i;g.appendChild(e)}}
+        function changeMonth(d){console.log('month',d)}
+        function toggleTodo(e){e.classList.toggle('checked');e.nextElementSibling.classList.toggle('completed')}
+        function openModal(){document.getElementById('add-modal').classList.add('active');document.getElementById('item-date').valueAsDate=new Date()}
+        function closeModal(){document.getElementById('add-modal').classList.remove('active')}
+        function updateForm(){var t=document.getElementById('item-type').value;document.getElementById('price-group').style.display=t==='wishlist'?'block':'none';document.getElementById('link-group').style.display=(t==='wishlist'||t==='feed')?'block':'none';document.getElementById('note-group').style.display=t==='note'?'block':'none'}
+        function addItem(){var t=document.getElementById('item-type').value;var f=document.getElementById('item-for').value;var ti=document.getElementById('item-title').value;if(!ti){alert('Please enter description');return}alert('Added to '+t+' for '+f+': '+ti);closeModal();document.getElementById('item-title').value='';document.getElementById('item-price').value='';document.getElementById('item-link').value='';document.getElementById('item-note').value=''}
+        function filterByPerson(p,b){document.querySelectorAll('#feed-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#feed-container .feed-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'block':'none'})}
+        function filterWishlist(p,b){document.querySelectorAll('#wishlists-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#wishlist-container .wishlist-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'flex':'none'})}
+        function filterActions(p,b){document.querySelectorAll('#actions-section .family-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');document.querySelectorAll('#actions-container .todo-item').forEach(i=>{i.style.display=(p==='all'||i.dataset.person===p)?'flex':'none'})}
+        function showNotifications(){alert('Coming soon!')}
+        document.getElementById('add-modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+        if('serviceWorker'in navigator){navigator.serviceWorker.register('service-worker.js')}
+    </script>
+</body>
+</html>
