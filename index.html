@@ -14,7 +14,7 @@
     <link rel="icon" type="image/png" href="kin.png">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        :root{--black:#000;--white:#fff;--red:#ff3333;--grey-light:#f5f5f5;--grey:#999;--grey-dark:#333;--green:#4CAF50;--blue:#2196F3;--orange:#FF9800;--purple:#9C27B0}
+        :root{--black:#000;--white:#fff;--red:#ff3333;--grey-light:#f5f5f5;--grey:#999;--grey-dark:#333;--green:#4CAF50;--blue:#2196F3;--orange:#FF9800;--purple:#9C27B0;--pink:#E91E63}
         
         html,body{
             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -55,7 +55,6 @@
             }
         }
         
-        /* Splash with slow fade transition */
         #splash{
             position:absolute;
             top:0;
@@ -103,7 +102,6 @@
             to{opacity:1;transform:translateY(0)}
         }
         
-        /* Login screen with fade in */
         #login-screen{
             position:absolute;
             top:0;
@@ -256,8 +254,24 @@
             justify-content:center;
             font-size:18px;
             transition:transform 0.2s;
+            position:relative;
         }
         .icon-btn:active{transform:scale(0.95)}
+        .notification-badge{
+            position:absolute;
+            top:-5px;
+            right:-5px;
+            width:20px;
+            height:20px;
+            background:var(--red);
+            color:white;
+            border-radius:50%;
+            font-size:11px;
+            font-weight:700;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
         
         .bottom-nav{
             position:absolute;
@@ -284,9 +298,26 @@
             font-size:10px;
             font-weight:500;
             transition:all 0.2s;
+            position:relative;
         }
         .nav-item.active{color:var(--black)}
         .nav-item svg{width:22px;height:22px;stroke-width:2}
+        .nav-badge{
+            position:absolute;
+            top:0;
+            right:5px;
+            width:18px;
+            height:18px;
+            background:var(--red);
+            color:white;
+            border-radius:50%;
+            font-size:10px;
+            font-weight:700;
+            display:none;
+            align-items:center;
+            justify-content:center;
+        }
+        .nav-badge.visible{display:flex}
         
         .section{display:none;padding:20px;animation:fadeIn .3s}
         .section.active{display:block}
@@ -459,8 +490,103 @@
         .icon-wishlist{background:#FFEBEE;color:var(--red)}
         .icon-event{background:#E8F5E9;color:var(--green)}
         .icon-task{background:#F5F5F5;color:var(--black)}
+        .icon-message{background:#FCE4EC;color:var(--pink)}
         
         .card{background:var(--white);border-radius:16px;padding:20px;margin-bottom:15px;border:1px solid #f0f0f0}
+        
+        .chat-container{
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+            max-height:calc(100vh - 300px);
+            overflow-y:auto;
+            padding:10px 0;
+            margin-bottom:80px;
+        }
+        
+        .message-bubble{
+            max-width:80%;
+            padding:15px;
+            border-radius:20px;
+            position:relative;
+            animation:messageSlide 0.3s ease-out;
+        }
+        @keyframes messageSlide{
+            from{opacity:0;transform:translateY(10px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+        
+        .message-sent{
+            align-self:flex-end;
+            background:var(--black);
+            color:white;
+            border-bottom-right-radius:5px;
+        }
+        
+        .message-received{
+            align-self:flex-start;
+            background:var(--grey-light);
+            color:var(--black);
+            border-bottom-left-radius:5px;
+        }
+        
+        .message-header{
+            font-size:12px;
+            font-weight:600;
+            margin-bottom:5px;
+            opacity:0.8;
+        }
+        
+        .message-text{
+            font-size:15px;
+            line-height:1.4;
+        }
+        
+        .message-time{
+            font-size:11px;
+            opacity:0.6;
+            margin-top:5px;
+            text-align:right;
+        }
+        
+        .chat-input-container{
+            position:fixed;
+            bottom:90px;
+            left:20px;
+            right:20px;
+            display:flex;
+            gap:10px;
+            background:white;
+            padding:10px;
+            border-radius:25px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+            z-index:50;
+            max-width:440px;
+            margin:0 auto;
+        }
+        
+        .chat-input{
+            flex:1;
+            border:none;
+            padding:10px 15px;
+            font-size:16px;
+            outline:none;
+            background:transparent;
+        }
+        
+        .chat-send-btn{
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            background:var(--black);
+            color:white;
+            border:none;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:18px;
+        }
         
         .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
         .calendar-month{font-size:20px;font-weight:700}
@@ -837,6 +963,27 @@
             animation:spin 1s ease-in-out infinite;
         }
         @keyframes spin{to{transform:rotate(360deg)}}
+        
+        .toast{
+            position:fixed;
+            top:80px;
+            left:50%;
+            transform:translateX(-50%) translateY(-100px);
+            background:var(--black);
+            color:white;
+            padding:15px 25px;
+            border-radius:25px;
+            font-size:14px;
+            font-weight:500;
+            z-index:9999;
+            opacity:0;
+            transition:all 0.3s ease;
+            box-shadow:0 4px 15px rgba(0,0,0,0.2);
+        }
+        .toast.show{
+            transform:translateX(-50%) translateY(0);
+            opacity:1;
+        }
     </style>
 </head>
 <body>
@@ -880,7 +1027,10 @@
                         <span class="user-badge" id="user-badge"></span>
                         <div class="header-actions">
                             <button class="icon-btn" onclick="installApp()" id="install-btn" style="display:none" title="Install App">📲</button>
-                            <button class="icon-btn" onclick="showNotifications()">🔔</button>
+                            <button class="icon-btn" onclick="showNotifications()" id="notif-btn">
+                                🔔
+                                <span class="notification-badge" id="notif-badge" style="display:none">0</span>
+                            </button>
                             <button class="icon-btn" onclick="logout()">→</button>
                         </div>
                     </div>
@@ -905,6 +1055,24 @@
             <div class="section" id="notes-section">
                 <h2 class="section-title">Family Notes</h2>
                 <div id="notes-container"></div>
+            </div>
+
+            <div class="section" id="messages-section">
+                <h2 class="section-title">💬 Family Chat</h2>
+                <div class="filter-dropdown">
+                    <select id="chat-filter" onchange="filterChat(this.value)">
+                        <option value="all">👨‍👩‍👧‍👦 Group Chat</option>
+                        <option value="ajay">👤 Chat with Ajay</option>
+                        <option value="lamies">👤 Chat with Lamies</option>
+                        <option value="amelle">👤 Chat with Amelle</option>
+                        <option value="elissa">👤 Chat with Elissa</option>
+                    </select>
+                </div>
+                <div id="chat-container" class="chat-container"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+                </div>
             </div>
 
             <div class="section" id="reminders-section">
@@ -969,6 +1137,10 @@
                         <span>💌 Send Note</span>
                         <div class="fab-option-icon" style="background:#FFF3E0">✉️</div>
                     </button>
+                    <button class="fab-option" onclick="showSection('messages')">
+                        <span>💬 Message</span>
+                        <div class="fab-option-icon" style="background:#FCE4EC">💬</div>
+                    </button>
                     <button class="fab-option" onclick="openModal('reminder')">
                         <span>⏰ Reminder</span>
                         <div class="fab-option-icon" style="background:#E8F5E9">🔔</div>
@@ -995,10 +1167,16 @@
                 <button class="nav-item active" onclick="showSection('feed')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                     <span>Feed</span>
+                    <span class="nav-badge" id="feed-badge">0</span>
                 </button>
                 <button class="nav-item" onclick="showSection('notes')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>Notes</span>
+                </button>
+                <button class="nav-item" onclick="showSection('messages')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    <span>Chat</span>
+                    <span class="nav-badge" id="chat-badge">0</span>
                 </button>
                 <button class="nav-item" onclick="showSection('reminders')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
@@ -1012,14 +1190,9 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span>Calendar</span>
                 </button>
-                <button class="nav-item" onclick="showSection('actions')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    <span>Tasks</span>
-                </button>
             </div>
         </nav>
 
-        <!-- Photo Modal -->
         <div class="modal" id="photo-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1042,13 +1215,11 @@
             </div>
         </div>
 
-        <!-- Image Expand Modal -->
         <div class="image-modal" id="image-modal" onclick="closeImageModal()">
             <button class="image-modal-close" onclick="closeImageModal()">×</button>
             <img src="" alt="Full size" id="expanded-image">
         </div>
 
-        <!-- Add Item Modal -->
         <div class="modal" id="add-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1089,17 +1260,31 @@
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
             </div>
         </div>
+
+        <div class="toast" id="toast"></div>
     </div>
 
     <script>
         let currentUser=localStorage.getItem('kin_current_user')||null;
-        let data={feed:JSON.parse(localStorage.getItem('kin_feed')||'[]'),notes:JSON.parse(localStorage.getItem('kin_notes')||'[]'),reminders:JSON.parse(localStorage.getItem('kin_reminders')||'[]'),wishlist:JSON.parse(localStorage.getItem('kin_wishlist')||'[]'),events:JSON.parse(localStorage.getItem('kin_events')||'[]'),tasks:JSON.parse(localStorage.getItem('kin_tasks')||'[]'),activities:JSON.parse(localStorage.getItem('kin_activities')||'[]')};
+        let data={
+            feed:JSON.parse(localStorage.getItem('kin_feed')||'[]'),
+            notes:JSON.parse(localStorage.getItem('kin_notes')||'[]'),
+            messages:JSON.parse(localStorage.getItem('kin_messages')||'[]'),
+            reminders:JSON.parse(localStorage.getItem('kin_reminders')||'[]'),
+            wishlist:JSON.parse(localStorage.getItem('kin_wishlist')||'[]'),
+            events:JSON.parse(localStorage.getItem('kin_events')||'[]'),
+            tasks:JSON.parse(localStorage.getItem('kin_tasks')||'[]'),
+            activities:JSON.parse(localStorage.getItem('kin_activities')||'[]'),
+            notifications:JSON.parse(localStorage.getItem('kin_notifications')||'[]')
+        };
         const users={'Ajay':'ajay','Lamies':'lamies','Amelle':'amelle','Elissa':'elissa'};
         let deferredPrompt;
         let currentFilter='all';
+        let currentChatFilter='all';
         let currentPhotoData=null;
         let currentModalType='feed';
         let touchStartY=0;
+        let lastActivityCheck=Date.now();
         
         document.addEventListener('DOMContentLoaded',function(){
             const savedUser=localStorage.getItem('kin_saved_username');
@@ -1121,6 +1306,7 @@
                         document.getElementById('user-badge').textContent=Object.keys(users).find(k=>users[k]===currentUser);
                         generateCalendar();
                         renderAll();
+                        startNotificationCheck();
                     },2000);
                 },3000);
             }else{
@@ -1165,6 +1351,7 @@
                 document.getElementById('user-badge').textContent=userKey;
                 generateCalendar();
                 renderAll();
+                startNotificationCheck();
             }else{
                 alert('Password must be your first name: Ajay, Lamies, Amelle, or Elissa');
             }
@@ -1202,11 +1389,16 @@
             document.getElementById(s+'-section').classList.add('active');
             
             const navItems=document.querySelectorAll('.nav-item');
-            const sectionMap={'feed':0,'notes':1,'reminders':2,'wishlists':3,'calendar':4,'actions':5};
+            const sectionMap={'feed':0,'notes':1,'messages':2,'reminders':3,'wishlists':4,'calendar':5,'actions':6};
             if(sectionMap[s]!==undefined) navItems[sectionMap[s]].classList.add('active');
             
             document.getElementById('fab-options').classList.remove('active');
             document.getElementById('main-fab').textContent='+';
+            
+            if(s==='messages'){
+                clearChatNotifications();
+                renderChat();
+            }
         }
         
         function toggleFab(){
@@ -1219,6 +1411,105 @@
                 options.classList.add('active');
                 fab.textContent='×';
             }
+        }
+        
+        function showToast(message){
+            const toast=document.getElementById('toast');
+            toast.textContent=message;
+            toast.classList.add('show');
+            setTimeout(()=>{
+                toast.classList.remove('show');
+            },3000);
+        }
+        
+        function addNotification(type,title,message,from){
+            const notif={
+                timestamp:Date.now(),
+                type:type,
+                title:title,
+                message:message,
+                from:from,
+                read:false
+            };
+            data.notifications.unshift(notif);
+            if(data.notifications.length>50) data.notifications=data.notifications.slice(0,50);
+            localStorage.setItem('kin_notifications',JSON.stringify(data.notifications));
+            updateNotificationBadge();
+            
+            if(type==='message' && from!==currentUser){
+                showToast(`💬 New message from ${from.charAt(0).toUpperCase()+from.slice(1)}`);
+            }else if(type==='note' && from!==currentUser){
+                showToast(`💌 New note from ${from.charAt(0).toUpperCase()+from.slice(1)}`);
+            }
+        }
+        
+        function updateNotificationBadge(){
+            const unread=data.notifications.filter(n=>!n.read).length;
+            const badge=document.getElementById('notif-badge');
+            if(unread>0){
+                badge.textContent=unread;
+                badge.style.display='flex';
+            }else{
+                badge.style.display='none';
+            }
+        }
+        
+        function updateChatBadge(){
+            const unreadMessages=data.messages.filter(m=>m.to===currentUser && !m.read).length;
+            const badge=document.getElementById('chat-badge');
+            if(unreadMessages>0){
+                badge.textContent=unreadMessages;
+                badge.classList.add('visible');
+            }else{
+                badge.classList.remove('visible');
+            }
+        }
+        
+        function clearChatNotifications(){
+            data.messages.forEach(m=>{
+                if(m.to===currentUser) m.read=true;
+            });
+            localStorage.setItem('kin_messages',JSON.stringify(data.messages));
+            updateChatBadge();
+        }
+        
+        function startNotificationCheck(){
+            updateNotificationBadge();
+            updateChatBadge();
+            setInterval(()=>{
+                updateChatBadge();
+                checkForNewActivity();
+            },5000);
+        }
+        
+        function checkForNewActivity(){
+            const newActivities=data.activities.filter(a=>a.timestamp>lastActivityCheck && a.user!==currentUser);
+            if(newActivities.length>0){
+                newActivities.forEach(activity=>{
+                    const userName=activity.user.charAt(0).toUpperCase()+activity.user.slice(1);
+                    showToast(`${userName} ${activity.action}`);
+                });
+                lastActivityCheck=Date.now();
+                renderFeed();
+            }
+        }
+        
+        function showNotifications(){
+            const unread=data.notifications.filter(n=>!n.read);
+            if(unread.length===0){
+                showToast('No new notifications');
+                return;
+            }
+            
+            let notifText=unread.map(n=>{
+                n.read=true;
+                return `• ${n.from.charAt(0).toUpperCase()+n.from.slice(1)}: ${n.title}`;
+            }).join('\n');
+            
+            localStorage.setItem('kin_notifications',JSON.stringify(data.notifications));
+            updateNotificationBadge();
+            
+            alert(`🔔 Notifications:\n\n${notifText}`);
         }
         
         function openPhotoModal(){
@@ -1310,6 +1601,7 @@
         function getActivityType(action){
             if(action.includes('photo')) return 'feed';
             if(action.includes('note')) return 'note';
+            if(action.includes('message')) return 'message';
             if(action.includes('reminder')) return 'reminder';
             if(action.includes('wishlist')||action.includes('wish')) return 'wishlist';
             if(action.includes('event')||action.includes('calendar')) return 'event';
@@ -1318,13 +1610,88 @@
         }
         
         function getActivityIcon(type){
-            const icons={feed:'📸',note:'💌',reminder:'⏰',wishlist:'🎁',event:'📅',task:'✅',general:'📌'};
+            const icons={feed:'📸',note:'💌',message:'💬',reminder:'⏰',wishlist:'🎁',event:'📅',task:'✅',general:'📌'};
             return icons[type]||'📌';
         }
         
         function getActivityColor(type){
-            const colors={feed:'icon-feed',note:'icon-note',reminder:'icon-reminder',wishlist:'icon-wishlist',event:'icon-event',task:'icon-task',general:''};
+            const colors={feed:'icon-feed',note:'icon-note',message:'icon-message',reminder:'icon-reminder',wishlist:'icon-wishlist',event:'icon-event',task:'icon-task',general:''};
             return colors[type]||'';
+        }
+        
+        function sendMessage(){
+            const input=document.getElementById('chat-input');
+            const text=input.value.trim();
+            if(!text) return;
+            
+            const to=document.getElementById('chat-filter').value;
+            const message={
+                timestamp:Date.now(),
+                from:currentUser,
+                to:to,
+                text:text,
+                read:to===currentUser
+            };
+            
+            data.messages.push(message);
+            localStorage.setItem('kin_messages',JSON.stringify(data.messages));
+            
+            const toName=to==='all'?'everyone':to;
+            addActivity(currentUser,`sent a message to ${toName}`,text);
+            
+            if(to!=='all' && to!==currentUser){
+                addNotification('message','New Message',text,currentUser);
+            }else if(to==='all'){
+                Object.values(users).forEach(u=>{
+                    if(u!==currentUser){
+                        addNotification('message','Group Message',text,currentUser);
+                    }
+                });
+            }
+            
+            input.value='';
+            renderChat();
+            showToast('Message sent!');
+        }
+        
+        function renderChat(){
+            const container=document.getElementById('chat-container');
+            const filter=document.getElementById('chat-filter').value;
+            
+            let messages=data.messages;
+            
+            if(filter==='all'){
+                messages=messages.filter(m=>m.to==='all' || m.to===currentUser || m.from===currentUser);
+            }else{
+                messages=messages.filter(m=>
+                    (m.from===currentUser && m.to===filter) ||
+                    (m.from===filter && m.to===currentUser)
+                );
+            }
+            
+            if(messages.length===0){
+                container.innerHTML='<div class="empty-state" style="padding:40px 20px"><div class="empty-state-icon">💬</div><h3>No messages yet</h3><p>Start the conversation!</p></div>';
+                return;
+            }
+            
+            container.innerHTML=messages.sort((a,b)=>a.timestamp-b.timestamp).map(msg=>{
+                const isSent=msg.from===currentUser;
+                const userName=msg.from.charAt(0).toUpperCase()+msg.from.slice(1);
+                const time=new Date(msg.timestamp).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+                
+                return`<div class="message-bubble ${isSent?'message-sent':'message-received'}">
+                    <div class="message-header">${isSent?'You':userName} ${msg.to!=='all'?'→ '+msg.to.charAt(0).toUpperCase()+msg.to.slice(1):''}</div>
+                    <div class="message-text">${msg.text}</div>
+                    <div class="message-time">${time}</div>
+                </div>`;
+            }).join('');
+            
+            container.scrollTop=container.scrollHeight;
+        }
+        
+        function filterChat(value){
+            currentChatFilter=value;
+            renderChat();
         }
         
         let currentMonth=new Date();
@@ -1363,6 +1730,7 @@
         function renderAll(){
             renderFeed();
             renderNotes();
+            renderChat();
             renderReminders();
             renderWishlist();
             renderEvents();
@@ -1372,6 +1740,41 @@
         function renderFeed(){
             const c=document.getElementById('feed-container');
             let allActivities=[...data.activities];
+            
+            data.notes.forEach(note=>{
+                const exists=allActivities.some(a=>
+                    a.type==='note' && 
+                    a.timestamp===note.timestamp && 
+                    a.user===note.from
+                );
+                if(!exists){
+                    allActivities.push({
+                        timestamp:note.timestamp,
+                        user:note.from,
+                        action:`sent a note to ${note.to==='all'?'everyone':note.to}`,
+                        text:note.text,
+                        type:'note'
+                    });
+                }
+            });
+            
+            data.messages.forEach(msg=>{
+                if(msg.to==='all'){
+                    const exists=allActivities.some(a=>
+                        a.type==='message' && 
+                        a.timestamp===msg.timestamp
+                    );
+                    if(!exists){
+                        allActivities.push({
+                            timestamp:msg.timestamp,
+                            user:msg.from,
+                            action:'sent a group message',
+                            text:msg.text,
+                            type:'message'
+                        });
+                    }
+                }
+            });
             
             if(allActivities.length===0 && data.feed.length>0){
                 data.feed.forEach(item=>{
@@ -1390,12 +1793,14 @@
                 allActivities=allActivities.filter(a=>a.user===currentFilter);
             }
             
+            allActivities.sort((a,b)=>b.timestamp-a.timestamp);
+            
             if(allActivities.length===0){
                 c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📱</div><h3>No activity yet</h3><p>Be the first to share something!</p></div>';
                 return;
             }
             
-            c.innerHTML=allActivities.sort((a,b)=>b.timestamp-a.timestamp).map(activity=>{
+            c.innerHTML=allActivities.map(activity=>{
                 const userName=activity.user.charAt(0).toUpperCase()+activity.user.slice(1);
                 const timeAgo=getTimeAgo(activity.timestamp);
                 const icon=getActivityIcon(activity.type);
@@ -1583,7 +1988,11 @@
         }
         
         function saveData(){
-            Object.keys(data).forEach(key=>localStorage.setItem('kin_'+key,JSON.stringify(data[key])));
+            Object.keys(data).forEach(key=>{
+                if(key!=='notifications'){
+                    localStorage.setItem('kin_'+key,JSON.stringify(data[key]));
+                }
+            });
         }
         
         function closeFabMenu(){
@@ -1639,33 +2048,43 @@
                     const feedItem={timestamp:Date.now(),author:user,for:'all',text:title||noteText,link:link,type:'feed'};
                     data.feed.push(feedItem);
                     addActivity(user,'shared an update',feedItem.text);
+                    showToast('Posted to feed!');
                     break;
                 case'note':
                     const noteItem={timestamp:Date.now(),text:noteText||title,to:fp||'all',from:user};
                     data.notes.push(noteItem);
                     const toName=fp==='all'?'everyone':fp;
                     addActivity(user,`sent a note to ${toName}`,noteItem.text);
+                    
+                    if(fp!=='all' && fp!==currentUser){
+                        addNotification('note','New Note',noteItem.text,user);
+                    }
+                    showToast('Note sent!');
                     break;
                 case'reminder':
                     const remItem={timestamp:Date.now(),title:title,date:date||new Date().toISOString().split('T')[0],for:user};
                     data.reminders.push(remItem);
                     addActivity(user,'added a reminder',remItem.title);
+                    showToast('Reminder added!');
                     break;
                 case'wishlist':
                     const wishItem={timestamp:Date.now(),title:title,price:price||'0',link:link,bought:false,for:user};
                     data.wishlist.push(wishItem);
                     addActivity(user,'added to wishlist',wishItem.title);
+                    showToast('Added to wishlist!');
                     break;
                 case'event':
                     const eventItem={timestamp:Date.now(),title:title,date:date||new Date().toISOString().split('T')[0],type:'general',for:'all'};
                     data.events.push(eventItem);
                     addActivity(user,'added a calendar event',eventItem.title);
+                    showToast('Event added!');
                     break;
                 case'task':
                     const taskItem={timestamp:Date.now(),title:title,completed:false,for:fp||user};
                     data.tasks.push(taskItem);
                     const taskFor=fp==='all'?'everyone':fp||'themselves';
                     addActivity(user,`created a task for ${taskFor}`,taskItem.title);
+                    showToast('Task created!');
                     break;
             }
             
@@ -1682,11 +2101,6 @@
         function filterActions(value){
             document.getElementById('actions-filter').value=value;
             renderTasks();
-        }
-        
-        function showNotifications(){
-            const count=data.reminders.length+data.tasks.filter(t=>!t.completed).length;
-            alert(`🔔 You have ${count} pending items`);
         }
         
         function setupPullToRefresh(){
@@ -1721,6 +2135,7 @@
                         indicator.classList.remove('visible');
                         indicator.textContent='⬇️ Pull to refresh';
                         indicator.style.transform='';
+                        showToast('Feed refreshed!');
                     },1000);
                 }else{
                     indicator.classList.remove('visible');
