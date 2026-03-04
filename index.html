@@ -766,6 +766,22 @@ const DEFAULT_LOCS=[
   {id:'gx-swim',name:'GX Swimming',icon:'🏊',custom:false},
 ];
 
+// ══ VERSION — bump this when deploying updates ══════════
+const KIN_VERSION='2.1';
+(function checkVersion(){
+  const stored=localStorage.getItem('kin_version');
+  if(stored!==KIN_VERSION){
+    // New version detected — clear service worker cache so new files load
+    // but KEEP all family data (kin_d_* keys) intact
+    if('caches'in window){
+      caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+    }
+    localStorage.setItem('kin_version',KIN_VERSION);
+    // If this is an upgrade (not first install), show a toast after load
+    if(stored)setTimeout(()=>toast('✨ KiN updated to v'+KIN_VERSION),2000);
+  }
+})();
+
 // ══ STATE ═════════════════════════════════════════════
 let CU=localStorage.getItem('kin_u2')||null;
 let feedFlt='all',modalType='feed',photoData=null,profPhotoData=null;
@@ -857,9 +873,26 @@ function requestPushPermission(){
   });
 }
 function sendPushNotif(title,body,icon){
-  // OS notification only when tab is hidden
-  if(pushGranted&&document.visibilityState!=='visible'){
-    try{new Notification(title,{body,icon:icon||'kin.png',badge:'kin.png',vibrate:[200,100,200]})}catch(e){}
+  if(!pushGranted)return;
+  if(document.visibilityState==='visible')return;
+  // Use service worker showNotification — works on Android Chrome
+  if('serviceWorker'in navigator){
+    navigator.serviceWorker.ready.then(sw=>{
+      sw.showNotification(title,{
+        body,
+        icon:icon||'kin.png',
+        badge:'kin.png',
+        vibrate:[200,100,200],
+        tag:'kin-msg',
+        renotify:true,
+        data:{url:location.href}
+      });
+    }).catch(()=>{
+      // Fallback to basic Notification
+      try{new Notification(title,{body,icon:icon||'kin.png'})}catch(e){}
+    });
+  } else {
+    try{new Notification(title,{body,icon:icon||'kin.png'})}catch(e){}
   }
 }
 
@@ -1455,8 +1488,9 @@ function renderFeed(){
   D.feed.forEach(f=>acts.push({ts:f.timestamp,user:f.author,verb:'shared an update',text:f.text,image:f.image,loc:f.loc,type:'feed'}));
   D.notes.forEach(n=>acts.push({ts:n.timestamp,user:n.from,verb:'sent a note to '+(n.to==='all'?'everyone':dsp(n.to)),text:n.text,type:'note'}));
   D.messages.forEach(m=>{
-    const inv=m.to==='all'||(m.from===CU)||(m.to===CU);if(!inv)return;
-    acts.push({ts:m.timestamp,user:m.from,verb:m.to==='all'?'sent a group message':`messaged ${dsp(m.to)}`,text:m.text,type:'message'});
+    // Only show GROUP messages in feed — private DMs stay in Chat only
+    if(m.to!=='all')return;
+    acts.push({ts:m.timestamp,user:m.from,verb:'sent a group message',text:m.text,type:'message'});
   });
   D.tasks.filter(t=>t.completedAt).forEach(t=>acts.push({ts:t.completedAt,user:t.completedBy||'family',verb:'completed a task',text:t.title,type:'task'}));
   D.events.forEach(e=>acts.push({ts:e.timestamp||0,user:e.author||'family',verb:'added an event',text:e.title,type:'event'}));
