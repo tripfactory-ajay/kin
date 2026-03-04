@@ -767,7 +767,7 @@ const DEFAULT_LOCS=[
 ];
 
 // ══ VERSION — bump this when deploying updates ══════════
-const KIN_VERSION='2.1';
+const KIN_VERSION='2.2';
 (function checkVersion(){
   const stored=localStorage.getItem('kin_version');
   if(stored!==KIN_VERSION){
@@ -1489,8 +1489,8 @@ function renderFeed(){
   D.notes.forEach(n=>acts.push({ts:n.timestamp,user:n.from,verb:'sent a note to '+(n.to==='all'?'everyone':dsp(n.to)),text:n.text,type:'note'}));
   D.messages.forEach(m=>{
     // Only show GROUP messages in feed — private DMs stay in Chat only
-    if(m.to!=='all')return;
-    acts.push({ts:m.timestamp,user:m.from,verb:'sent a group message',text:m.text,type:'message'});
+    if(m.to!=='all'||m.private===true)return;
+    acts.push({ts:m.timestamp,user:m.from,verb:'said in group chat',text:m.text,type:'message'});
   });
   D.tasks.filter(t=>t.completedAt).forEach(t=>acts.push({ts:t.completedAt,user:t.completedBy||'family',verb:'completed a task',text:t.title,type:'task'}));
   D.events.forEach(e=>acts.push({ts:e.timestamp||0,user:e.author||'family',verb:'added an event',text:e.title,type:'event'}));
@@ -1576,7 +1576,8 @@ function sendMsg(){
   const inp=document.getElementById('cinp');
   const txt=inp.value.trim();if(!txt)return;
   const to=document.getElementById('chat-flt').value;
-  const msg={timestamp:Date.now(),from:CU,to,text:txt};
+  // Mark private messages explicitly so feed filter is reliable
+  const msg={timestamp:Date.now(),from:CU,to,text:txt,private:to!=='all'};
   D.messages.push(msg);
   // Mark as notified so WE don't get our own notification
   notifiedMsgTs.add(msg.timestamp);
